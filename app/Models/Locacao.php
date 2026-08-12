@@ -22,17 +22,20 @@ class Locacao extends Model
         'km_final',
     ];
 
-    public function rules(): array
+    protected $casts = [
+        'data_inicio_periodo' => 'datetime',
+        'data_final_previsto_periodo' => 'datetime',
+        'data_final_realizado_periodo' => 'datetime',
+        'valor_diaria' => 'float',
+    ];
+
+    public function cliente()
     {
-        return [
-            'cliente_id'                   => 'required|exists:clientes,id',
-            'carro_id'                     => 'required|exists:carros,id',
-            'data_inicio_periodo'          => 'required|date',
-            'data_final_previsto_periodo'  => 'required|date|after:data_inicio_periodo',
-            'data_final_realizado_periodo' => 'nullable|date|after:data_inicio_periodo',
-            'valor_diaria'                 => 'required|numeric|min:0',
-            'km_inicial'                   => 'required|integer|min:0',
-            'km_final'                     => 'nullable|integer|min:0',
-        ];
+        return $this->belongsTo(Cliente::class);
+    }
+
+    public function carro()
+    {
+        return $this->belongsTo(Carro::class);
     }
 }

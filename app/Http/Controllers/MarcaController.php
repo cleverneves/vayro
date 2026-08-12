@@ -2,94 +2,61 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreMarcaRequest;
+use App\Http\Requests\UpdateMarcaRequest;
+use App\Http\Resources\MarcaResource;
+use App\Models\Marca;
 use Illuminate\Support\Facades\Storage;
-use App\Repositories\MarcaRepository;
 
 class MarcaController extends Controller
 {
-    public function __construct(private MarcaRepository $repository)
+    public function index()
     {
+        $marcas = Marca::with('modelos')->paginate(15);
+
+        return MarcaResource::collection($marcas);
     }
 
-    public function index(Request $request)
+    public function store(StoreMarcaRequest $request)
     {
-        if ($request->has('atributos_modelos')) {
-            $this->repository->selectAtributosRegistrosRelacionados('modelos:id,' . $request->atributos_modelos);
-        } else {
-            $this->repository->selectAtributosRegistrosRelacionados('modelos');
-        }
+        $dados = $request->validated();
+        $dados['imagem'] = $request->file('imagem')->store('imagens', 'public');
 
-        if ($request->has('filtro')) {
-            $this->repository->filtro($request->filtro);
-        }
+        $marca = Marca::create($dados);
 
-        if ($request->has('atributos')) {
-            $this->repository->selectAtributos($request->atributos);
-        }
-
-        return response()->json($this->repository->getResultado(), 200);
+        return (new MarcaResource($marca))->response()->setStatusCode(201);
     }
 
-    public function store(Request $request)
+    public function show(Marca $marca)
     {
-        $marca = $this->repository->getModel();
-
-        $this->validarRequisicao($request, $marca->rules(), $marca->feedback());
-
-        $imagem_urn = $request->file('imagem')->store('imagens', 'public');
-
-        $marca = $marca->create([
-            'nome'   => $request->nome,
-            'imagem' => $imagem_urn,
-        ]);
-
-        return response()->json($marca, 201);
+        return new MarcaResource($marca->load('modelos'));
     }
 
-    public function show($id)
+    public function update(UpdateMarcaRequest $request, Marca $marca)
     {
-        $marca = $this->repository->getModel()->with('modelos')->find($id);
+        $dados = $request->validated();
 
-        if (is_null($marca)) {
-            return response()->json(['erro' => 'Recurso pesquisado não existe.'], 404);
-        }
-
-        return response()->json($marca, 200);
-    }
-
-    public function update(Request $request, int $id)
-    {
-        $marca = $this->repository->getModel()->find($id);
-
-        if (is_null($marca)) {
-            return response()->json(['erro' => 'Não foi possível atualizar. A marca solicitada é inexistente.'], 404);
-        }
-
-        $this->validarRequisicao($request, $marca->rules(), $marca->feedback());
-
-        if ($request->file('imagem')) {
+        if ($request->hasFile('imagem')) {
             Storage::disk('public')->delete($marca->imagem);
-            $marca->imagem = $request->file('imagem')->store('imagens', 'public');
+            $dados['imagem'] = $request->file('imagem')->store('imagens', 'public');
         }
 
-        $marca->fill($request->except('imagem'));
-        $marca->save();
+        $marca->update($dados);
 
-        return response()->json($marca, 200);
+        return new MarcaResource($marca);
     }
 
-    public function destroy(int $id)
+    public function destroy(Marca $marca)
     {
-        $marca = $this->repository->getModel()->find($id);
-
-        if (is_null($marca)) {
-            return response()->json(['erro' => 'Falha ao excluir. A marca solicitada é inexistente.'], 404);
+        if ($marca->modelos()->exists()) {
+            return response()->json([
+                'message' => 'Não é possível excluir uma marca que possui modelos cadastrados.',
+            ], 409);
         }
 
         Storage::disk('public')->delete($marca->imagem);
         $marca->delete();
 
-        return response()->json(['msg' => 'A marca foi removida com sucesso!'], 200);
+        return response()->noContent();
     }
 }

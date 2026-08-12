@@ -11,6 +11,18 @@ API REST para gerenciamento de locação de veículos, construída com **Laravel
 - **Nginx**
 - **Docker / Docker Compose**
 
+## Arquitetura
+
+A API segue o fluxo convencional do Laravel, sem camadas extras (Repository, Service genérico, etc.):
+
+```
+Route → Controller → Form Request → Model (Eloquent) → API Resource → Response
+```
+
+- **Form Requests** (`app/Http/Requests`) concentram toda a validação de entrada.
+- **API Resources** (`app/Http/Resources`) controlam o formato das respostas e nunca expõem Models diretamente.
+- **Route Model Binding** é usado para buscar registros por ID, com resposta 404 padronizada quando o recurso não existe.
+
 ## Serviços Docker
 
 | Container | Descrição | Porta |
@@ -56,7 +68,7 @@ docker-compose exec app php artisan jwt:secret
 docker-compose exec app php artisan migrate
 ```
 
-### 6. (Opcional) Crie o link de armazenamento público
+### 6. Crie o link de armazenamento público (necessário para as imagens de marcas/modelos)
 
 ```bash
 docker-compose exec app php artisan storage:link
@@ -68,7 +80,7 @@ A API estará disponível em **[http://localhost:8989](http://localhost:8989)**.
 
 ## Autenticação
 
-A API usa **JWT** como mecanismo de autenticação. Todas as rotas sob `/api/v1` exigem o token no header:
+A API usa **JWT** como mecanismo de autenticação. Todas as rotas sob `/api/v1` (exceto `login`) exigem o token no header:
 
 ```
 Authorization: Bearer {token}
@@ -78,8 +90,8 @@ Authorization: Bearer {token}
 
 | Método | Rota | Autenticação | Descrição |
 |--------|------|--------------|-----------|
-| `POST` | `/api/v1/login` | Não | Obtém o token JWT |
-| `POST` | `/api/v1/me` | Sim | Retorna o usuário autenticado |
+| `POST` | `/api/v1/login` | Não | Autentica e retorna o token JWT (401 se inválido) |
+| `GET` | `/api/v1/me` | Sim | Retorna o usuário autenticado |
 | `POST` | `/api/v1/refresh` | Sim | Renova o token |
 | `POST` | `/api/v1/logout` | Sim | Invalida o token |
 
@@ -87,71 +99,99 @@ Authorization: Bearer {token}
 
 ## Endpoints da API
 
-Todas as rotas abaixo exigem autenticação JWT.
+Todas as rotas abaixo exigem autenticação JWT e seguem o padrão REST (recursos no plural, em português, alinhados às tabelas do domínio).
 
-### Marcas — `/api/v1/marca`
-
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `GET` | `/api/v1/marca` | Lista todas as marcas |
-| `POST` | `/api/v1/marca` | Cadastra uma marca (aceita imagem PNG) |
-| `GET` | `/api/v1/marca/{id}` | Exibe uma marca com seus modelos |
-| `PUT/PATCH` | `/api/v1/marca/{id}` | Atualiza uma marca |
-| `DELETE` | `/api/v1/marca/{id}` | Remove uma marca |
-
-### Modelos — `/api/v1/modelo`
+### Marcas — `/api/v1/marcas`
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `GET` | `/api/v1/modelo` | Lista todos os modelos |
-| `POST` | `/api/v1/modelo` | Cadastra um modelo (aceita imagem PNG/JPEG) |
-| `GET` | `/api/v1/modelo/{id}` | Exibe um modelo com sua marca |
-| `PUT/PATCH` | `/api/v1/modelo/{id}` | Atualiza um modelo |
-| `DELETE` | `/api/v1/modelo/{id}` | Remove um modelo |
+| `GET` | `/api/v1/marcas` | Lista marcas paginadas (com modelos) |
+| `POST` | `/api/v1/marcas` | Cadastra uma marca (imagem PNG obrigatória) |
+| `GET` | `/api/v1/marcas/{marca}` | Exibe uma marca com seus modelos |
+| `PUT/PATCH` | `/api/v1/marcas/{marca}` | Atualiza uma marca |
+| `DELETE` | `/api/v1/marcas/{marca}` | Remove uma marca (409 se possuir modelos) |
 
-### Carros — `/api/v1/carro`
-
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `GET` | `/api/v1/carro` | Lista todos os carros |
-| `POST` | `/api/v1/carro` | Cadastra um carro |
-| `GET` | `/api/v1/carro/{id}` | Exibe um carro com seu modelo |
-| `PUT/PATCH` | `/api/v1/carro/{id}` | Atualiza um carro |
-| `DELETE` | `/api/v1/carro/{id}` | Remove um carro |
-
-### Clientes — `/api/v1/cliente`
+### Modelos — `/api/v1/modelos`
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `GET` | `/api/v1/cliente` | Lista todos os clientes |
-| `POST` | `/api/v1/cliente` | Cadastra um cliente |
-| `GET` | `/api/v1/cliente/{id}` | Exibe um cliente |
-| `PUT/PATCH` | `/api/v1/cliente/{id}` | Atualiza um cliente |
-| `DELETE` | `/api/v1/cliente/{id}` | Remove um cliente |
+| `GET` | `/api/v1/modelos` | Lista modelos paginados (com marca) |
+| `POST` | `/api/v1/modelos` | Cadastra um modelo (imagem PNG/JPEG obrigatória) |
+| `GET` | `/api/v1/modelos/{modelo}` | Exibe um modelo com sua marca |
+| `PUT/PATCH` | `/api/v1/modelos/{modelo}` | Atualiza um modelo |
+| `DELETE` | `/api/v1/modelos/{modelo}` | Remove um modelo (409 se possuir carros) |
 
-### Locações — `/api/v1/locacao`
+### Carros — `/api/v1/carros`
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `GET` | `/api/v1/locacao` | Lista todas as locações |
-| `POST` | `/api/v1/locacao` | Registra uma locação |
-| `GET` | `/api/v1/locacao/{id}` | Exibe uma locação |
-| `PUT/PATCH` | `/api/v1/locacao/{id}` | Atualiza uma locação |
-| `DELETE` | `/api/v1/locacao/{id}` | Remove uma locação |
+| `GET` | `/api/v1/carros` | Lista carros paginados (aceita `?disponivel=1`) |
+| `POST` | `/api/v1/carros` | Cadastra um carro |
+| `GET` | `/api/v1/carros/{carro}` | Exibe um carro com seu modelo |
+| `PUT/PATCH` | `/api/v1/carros/{carro}` | Atualiza um carro |
+| `DELETE` | `/api/v1/carros/{carro}` | Remove um carro (409 se possuir locações) |
+
+### Clientes — `/api/v1/clientes`
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/api/v1/clientes` | Lista clientes paginados |
+| `POST` | `/api/v1/clientes` | Cadastra um cliente |
+| `GET` | `/api/v1/clientes/{cliente}` | Exibe um cliente |
+| `PUT/PATCH` | `/api/v1/clientes/{cliente}` | Atualiza um cliente |
+| `DELETE` | `/api/v1/clientes/{cliente}` | Remove um cliente (409 se possuir locações) |
+
+### Locações — `/api/v1/locacoes`
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/api/v1/locacoes` | Lista locações paginadas (aceita `?cliente_id=` e `?carro_id=`) |
+| `POST` | `/api/v1/locacoes` | Registra uma locação |
+| `GET` | `/api/v1/locacoes/{locacao}` | Exibe uma locação |
+| `PUT/PATCH` | `/api/v1/locacoes/{locacao}` | Atualiza uma locação (ex.: finalização com km/data) |
+| `DELETE` | `/api/v1/locacoes/{locacao}` | Remove uma locação |
 
 ---
 
-## Filtros e seleção de atributos
+## Formato das respostas
 
-Os endpoints de listagem (`GET`) aceitam query strings para personalizar a resposta:
+Recursos únicos e coleções seguem o padrão de API Resources do Laravel:
 
-| Parâmetro | Exemplo | Descrição |
-|-----------|---------|-----------|
-| `filtro` | `?filtro=nome:like:%Ford%` | Filtra registros (`coluna:operador:valor`) |
-| `atributos` | `?atributos=id,nome` | Seleciona apenas as colunas informadas |
-| `atributos_modelos` | `?atributos_modelos=id,nome` | Limita colunas do relacionamento (marcas) |
-| `atributos_marca` | `?atributos_marca=id,nome` | Limita colunas do relacionamento (modelos) |
-| `atributos_modelo` | `?atributos_modelo=id,nome` | Limita colunas do relacionamento (carros) |
+```json
+{
+  "data": {
+    "id": 1,
+    "nome": "Honda"
+  }
+}
+```
+
+Listagens são paginadas e incluem `links` e `meta`. Erros de validação retornam `422` com a estrutura:
+
+```json
+{
+  "message": "The given data was invalid.",
+  "errors": {
+    "nome": ["O nome da marca já existe."]
+  }
+}
+```
+
+---
+
+## Testes
+
+A suíte usa um banco PostgreSQL isolado (`vayro_testing`), configurado em `phpunit.xml`. Antes de rodar os testes pela primeira vez, crie o banco:
+
+```bash
+docker-compose exec pgsql psql -U vayro -d vayro -c "CREATE DATABASE vayro_testing;"
+```
+
+Para executar a suíte:
+
+```bash
+docker-compose exec app php artisan test
+```
 
 ---
 

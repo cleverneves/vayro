@@ -11,10 +11,8 @@ class Cliente extends Model
 
     protected $fillable = ['nome'];
 
-    public function rules() {
-        return [
-            'nome' => 'required|min:3',
-        ];
+    public function locacoes()
+    {
+        return $this->hasMany(Locacao::class);
     }
-
 }

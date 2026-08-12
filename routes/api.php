@@ -12,14 +12,15 @@ Route::prefix('v1')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
 
     Route::middleware('jwt.auth')->group(function () {
-        Route::post('me', [AuthController::class, 'me']);
+        Route::get('me', [AuthController::class, 'me']);
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('refresh', [AuthController::class, 'refresh']);
 
-        Route::apiResource('clients', ClienteController::class);
-        Route::apiResource('cars', CarroController::class);
-        Route::apiResource('marc', MarcaController::class);
-        Route::apiResource('models', ModeloController::class);
-        Route::apiResource('locactions', LocacaoController::class);
+        Route::apiResource('marcas', MarcaController::class);
+        Route::apiResource('modelos', ModeloController::class);
+        Route::apiResource('carros', CarroController::class);
+        Route::apiResource('clientes', ClienteController::class);
+        Route::apiResource('locacoes', LocacaoController::class)
+            ->parameters(['locacoes' => 'locacao']);
     });
 });

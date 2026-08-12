@@ -2,78 +2,49 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Repositories\ClienteRepository;
+use App\Http\Requests\StoreClienteRequest;
+use App\Http\Requests\UpdateClienteRequest;
+use App\Http\Resources\ClienteResource;
+use App\Models\Cliente;
 
 class ClienteController extends Controller
 {
-    public function __construct(private ClienteRepository $repository)
+    public function index()
     {
+        $clientes = Cliente::paginate(15);
+
+        return ClienteResource::collection($clientes);
     }
 
-    public function index(Request $request)
+    public function store(StoreClienteRequest $request)
     {
-        if ($request->has('filtro')) {
-            $this->repository->filtro($request->filtro);
-        }
+        $cliente = Cliente::create($request->validated());
 
-        if ($request->has('atributos')) {
-            $this->repository->selectAtributos($request->atributos);
-        }
-
-        return response()->json($this->repository->getResultado(), 200);
+        return (new ClienteResource($cliente))->response()->setStatusCode(201);
     }
 
-    public function store(Request $request)
+    public function show(Cliente $cliente)
     {
-        $cliente = $this->repository->getModel();
-
-        $this->validarRequisicao($request, $cliente->rules());
-
-        $cliente = $cliente->create([
-            'nome' => $request->nome,
-        ]);
-
-        return response()->json($cliente, 201);
+        return new ClienteResource($cliente);
     }
 
-    public function show(int $id)
+    public function update(UpdateClienteRequest $request, Cliente $cliente)
     {
-        $cliente = $this->repository->getModel()->find($id);
+        $cliente->update($request->validated());
 
-        if (is_null($cliente)) {
-            return response()->json(['erro' => 'O cliente pesquisado não existe.'], 404);
-        }
-
-        return response()->json($cliente, 200);
+        return new ClienteResource($cliente);
     }
 
-    public function update(Request $request, int $id)
+    public function destroy(Cliente $cliente)
     {
-        $cliente = $this->repository->getModel()->find($id);
-
-        if (is_null($cliente)) {
-            return response()->json(['erro' => 'Não foi possível atualizar. O cliente solicitado é inexistente.'], 404);
-        }
-
-        $this->validarRequisicao($request, $cliente->rules());
-
-        $cliente->fill($request->all());
-        $cliente->save();
-
-        return response()->json($cliente, 200);
-    }
-
-    public function destroy(int $id)
-    {
-        $cliente = $this->repository->getModel()->find($id);
-
-        if (is_null($cliente)) {
-            return response()->json(['erro' => 'Impossível excluir. Cliente inexistente.'], 404);
+        if ($cliente->locacoes()->exists()) {
+            return response()->json([
+                'message' => 'Não é possível excluir um cliente que possui locações cadastradas.',
+            ], 409);
         }
 
         $cliente->delete();
 
-        return response()->json(['msg' => 'O cliente foi removido com sucesso!'], 200);
+        return response()->noContent();
     }
 }

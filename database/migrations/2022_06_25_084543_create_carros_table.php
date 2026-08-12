@@ -17,12 +17,13 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('modelo_id');
             $table->string('placa', 10)->unique();
-            $table->boolean('disponivel');
+            $table->boolean('disponivel')->index();
             $table->integer('km');
             $table->timestamps();
 
             //foreign key (constraints)
-            $table->foreign('modelo_id')->references('id')->on('modelos')->onDelete('cascade');
+            $table->foreign('modelo_id')->references('id')->on('modelos')->onDelete('restrict');
+            $table->index('modelo_id');
         });
     }
 

@@ -2,87 +2,52 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCarroRequest;
+use App\Http\Requests\UpdateCarroRequest;
+use App\Http\Resources\CarroResource;
+use App\Models\Carro;
 use Illuminate\Http\Request;
-use App\Repositories\CarroRepository;
 
 class CarroController extends Controller
 {
-    public function __construct(private CarroRepository $repository)
-    {
-    }
-
     public function index(Request $request)
     {
-        if ($request->has('atributos_modelo')) {
-            $this->repository->selectAtributosRegistrosRelacionados('modelo:id,' . $request->atributos_modelo);
-        } else {
-            $this->repository->selectAtributosRegistrosRelacionados('modelo');
-        }
+        $carros = Carro::with('modelo')
+            ->when($request->filled('disponivel'), fn ($query) => $query->where('disponivel', $request->boolean('disponivel')))
+            ->paginate(15);
 
-        if ($request->has('filtro')) {
-            $this->repository->filtro($request->filtro);
-        }
-
-        if ($request->has('atributos')) {
-            $this->repository->selectAtributos($request->atributos);
-        }
-
-        return response()->json($this->repository->getResultado(), 200);
+        return CarroResource::collection($carros);
     }
 
-    public function store(Request $request)
+    public function store(StoreCarroRequest $request)
     {
-        $carro = $this->repository->getModel();
+        $carro = Carro::create($request->validated());
 
-        $this->validarRequisicao($request, $carro->rules());
-
-        $carro = $carro->create([
-            'modelo_id'  => $request->modelo_id,
-            'placa'      => $request->placa,
-            'disponivel' => $request->disponivel,
-            'km'         => $request->km,
-        ]);
-
-        return response()->json($carro, 201);
+        return (new CarroResource($carro))->response()->setStatusCode(201);
     }
 
-    public function show(int $id)
+    public function show(Carro $carro)
     {
-        $carro = $this->repository->getModel()->with('modelo')->find($id);
-
-        if (is_null($carro)) {
-            return response()->json(['erro' => 'O carro pesquisado não existe.'], 404);
-        }
-
-        return response()->json($carro, 200);
+        return new CarroResource($carro->load('modelo'));
     }
 
-    public function update(Request $request, int $id)
+    public function update(UpdateCarroRequest $request, Carro $carro)
     {
-        $carro = $this->repository->getModel()->find($id);
+        $carro->update($request->validated());
 
-        if (is_null($carro)) {
-            return response()->json(['erro' => 'Não foi possível atualizar. O carro solicitado é inexistente.'], 404);
-        }
-
-        $this->validarRequisicao($request, $carro->rules());
-
-        $carro->fill($request->all());
-        $carro->save();
-
-        return response()->json($carro, 200);
+        return new CarroResource($carro);
     }
 
-    public function destroy(int $id)
+    public function destroy(Carro $carro)
     {
-        $carro = $this->repository->getModel()->find($id);
-
-        if (is_null($carro)) {
-            return response()->json(['erro' => 'Falha ao excluir. O carro solicitado é inexistente.'], 404);
+        if ($carro->locacoes()->exists()) {
+            return response()->json([
+                'message' => 'Não é possível excluir um carro que possui locações cadastradas.',
+            ], 409);
         }
 
         $carro->delete();
 
-        return response()->json(['msg' => 'O carro foi removido com sucesso!'], 200);
+        return response()->noContent();
     }
 }

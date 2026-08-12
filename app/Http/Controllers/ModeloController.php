@@ -2,99 +2,61 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreModeloRequest;
+use App\Http\Requests\UpdateModeloRequest;
+use App\Http\Resources\ModeloResource;
+use App\Models\Modelo;
 use Illuminate\Support\Facades\Storage;
-use App\Repositories\ModeloRepository;
 
 class ModeloController extends Controller
 {
-    public function __construct(private ModeloRepository $repository)
+    public function index()
     {
+        $modelos = Modelo::with('marca')->paginate(15);
+
+        return ModeloResource::collection($modelos);
     }
 
-    public function index(Request $request)
+    public function store(StoreModeloRequest $request)
     {
-        if ($request->has('atributos_marca')) {
-            $this->repository->selectAtributosRegistrosRelacionados('marca:id,' . $request->atributos_marca);
-        } else {
-            $this->repository->selectAtributosRegistrosRelacionados('marca');
-        }
+        $dados = $request->validated();
+        $dados['imagem'] = $request->file('imagem')->store('imagens/modelos', 'public');
 
-        if ($request->has('filtro')) {
-            $this->repository->filtro($request->filtro);
-        }
+        $modelo = Modelo::create($dados);
 
-        if ($request->has('atributos')) {
-            $this->repository->selectAtributos($request->atributos);
-        }
-
-        return response()->json($this->repository->getResultado(), 200);
+        return (new ModeloResource($modelo))->response()->setStatusCode(201);
     }
 
-    public function store(Request $request)
+    public function show(Modelo $modelo)
     {
-        $modelo = $this->repository->getModel();
-
-        $this->validarRequisicao($request, $modelo->rules());
-
-        $imagem_urn = $request->file('imagem')->store('imagens/modelos', 'public');
-
-        $modelo = $modelo->create([
-            'marca_id'      => $request->marca_id,
-            'nome'          => $request->nome,
-            'imagem'        => $imagem_urn,
-            'numero_portas' => $request->numero_portas,
-            'lugares'       => $request->lugares,
-            'air_bag'       => $request->air_bag,
-            'abs'           => $request->abs,
-        ]);
-
-        return response()->json($modelo, 201);
+        return new ModeloResource($modelo->load('marca'));
     }
 
-    public function show(int $id)
+    public function update(UpdateModeloRequest $request, Modelo $modelo)
     {
-        $modelo = $this->repository->getModel()->with('marca')->find($id);
+        $dados = $request->validated();
 
-        if (is_null($modelo)) {
-            return response()->json(['erro' => 'Recurso pesquisado não existe.'], 404);
-        }
-
-        return response()->json($modelo, 200);
-    }
-
-    public function update(Request $request, int $id)
-    {
-        $modelo = $this->repository->getModel()->find($id);
-
-        if (is_null($modelo)) {
-            return response()->json(['erro' => 'Não foi possível atualizar. O modelo solicitado é inexistente.'], 404);
-        }
-
-        $this->validarRequisicao($request, $modelo->rules());
-
-        if ($request->file('imagem')) {
+        if ($request->hasFile('imagem')) {
             Storage::disk('public')->delete($modelo->imagem);
-            $modelo->imagem = $request->file('imagem')->store('imagens/modelos', 'public');
+            $dados['imagem'] = $request->file('imagem')->store('imagens/modelos', 'public');
         }
 
-        $modelo->fill($request->except('imagem'));
-        $modelo->save();
+        $modelo->update($dados);
 
-        return response()->json($modelo, 200);
+        return new ModeloResource($modelo);
     }
 
-    public function destroy(int $id)
+    public function destroy(Modelo $modelo)
     {
-        $modelo = $this->repository->getModel()->find($id);
-
-        if (is_null($modelo)) {
-            return response()->json(['erro' => 'Falha ao excluir. O modelo solicitado é inexistente.'], 404);
+        if ($modelo->carros()->exists()) {
+            return response()->json([
+                'message' => 'Não é possível excluir um modelo que possui carros cadastrados.',
+            ], 409);
         }
 
         Storage::disk('public')->delete($modelo->imagem);
         $modelo->delete();
 
-        return response()->json(['msg' => 'O modelo foi removido com sucesso!'], 200);
+        return response()->noContent();
     }
 }

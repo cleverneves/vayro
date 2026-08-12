@@ -4,12 +4,16 @@ ARG user=loccarros
 ARG uid=1000
 
 # Install runtime libs, compile all extensions and remove build tools in a single layer
-RUN apk add --no-cache git zip unzip libpq oniguruma \
+RUN apk add --no-cache git zip unzip libpq oniguruma freetype libjpeg-turbo libpng \
     && apk add --no-cache --virtual .build-deps \
     $PHPIZE_DEPS \
     oniguruma-dev \
     postgresql-dev \
-    && docker-php-ext-install pdo_pgsql pgsql mbstring pcntl \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libpng-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_pgsql pgsql mbstring pcntl gd \
     && pecl install redis \
     && docker-php-ext-enable redis \
     && apk del .build-deps \

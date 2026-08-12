@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\LoginRequest;
+use App\Http\Resources\UserResource;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $credenciais = $request->only('email', 'password');
-
-        $token = auth('api')->attempt($credenciais);
+        $token = auth('api')->attempt($request->validated());
 
         if (!$token) {
-            return response()->json(['error' => 'Usuário ou senha inválida.'], 403);
+            return response()->json(['message' => 'Usuário ou senha inválida.'], 401);
         }
 
         return response()->json(['token' => $token]);
@@ -23,7 +22,7 @@ class AuthController extends Controller
     {
         auth('api')->logout();
 
-        return response()->json(['msg' => 'Logout realizado com sucesso!']);
+        return response()->json(['message' => 'Logout realizado com sucesso!']);
     }
 
     public function refresh()
@@ -35,6 +34,6 @@ class AuthController extends Controller
 
     public function me()
     {
-        return response()->json(auth()->user());
+        return new UserResource(auth('api')->user());
     }
 }

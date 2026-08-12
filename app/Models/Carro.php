@@ -11,18 +11,17 @@ class Carro extends Model
 
     protected $fillable = ['modelo_id', 'placa', 'disponivel', 'km'];
 
-    public function rules(): array
-    {
-        return [
-            'modelo_id' => 'required|exists:modelos,id',
-            'placa'     => 'required|string|max:10',
-            'disponivel'=> 'required|boolean',
-            'km'        => 'required|integer|min:0',
-        ];
-    }
+    protected $casts = [
+        'disponivel' => 'boolean',
+    ];
 
     public function modelo()
     {
-        return $this->belongsTo('App\Models\Modelo');
+        return $this->belongsTo(Modelo::class);
+    }
+
+    public function locacoes()
+    {
+        return $this->hasMany(Locacao::class);
     }
 }
