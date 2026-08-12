@@ -1,0 +1,94 @@
+---
+description: Regras de arquitetura e organização do backend Vayro.
+alwaysApply: true
+---
+
+# Architecture Rules
+
+## Arquitetura
+
+Utilizar uma arquitetura Laravel convencional.
+
+Fluxo preferencial:
+
+HTTP Request
+    ↓
+Route
+    ↓
+Controller
+    ↓
+Form Request
+    ↓
+Model / domínio da aplicação
+    ↓
+Database
+    ↓
+API Resource
+    ↓
+HTTP Response
+
+## Controllers
+
+Controllers devem ser pequenos.
+
+Responsabilidades:
+
+- receber a requisição;
+- delegar a operação;
+- retornar a resposta.
+
+Evitar:
+
+- regras de negócio extensas;
+- queries complexas;
+- validações inline;
+- manipulação direta de múltiplas responsabilidades.
+
+## Form Requests
+
+Utilizar Form Requests para validação de entrada sempre que a validação
+possuir complexidade ou for reutilizável.
+
+Não duplicar regras de validação entre controllers.
+
+## Models
+
+Utilizar Eloquent como ORM principal.
+
+Models devem representar entidades persistidas e seus relacionamentos.
+
+Utilizar:
+
+- casts;
+- relationships;
+- scopes;
+- accessors/mutators quando fizer sentido.
+
+Evitar transformar Models em classes gigantes.
+
+## Services
+
+Criar uma classe de Service/Action somente quando uma operação de negócio
+possuir complexidade suficiente para justificar sua extração.
+
+Não criar:
+
+UserService
+VehicleService
+RentalService
+
+automaticamente apenas porque "todo model precisa de um service".
+
+## API Resources
+
+Não retornar Models diretamente quando a resposta fizer parte do contrato
+público da API.
+
+Utilizar API Resources para controlar o formato das respostas.
+
+## Dependency Injection
+
+Preferir dependency injection quando uma dependência externa ou substituível
+estiver envolvida.
+
+Não criar interfaces apenas para abstrações teóricas.
