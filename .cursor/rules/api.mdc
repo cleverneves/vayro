@@ -1,0 +1,88 @@
+---
+description: Padrões REST e contrato da API Vayro.
+globs:
+  - "routes/**/*.php"
+  - "app/Http/**/*.php"
+alwaysApply: false
+---
+
+# API Rules
+
+## REST
+
+A API deve seguir princípios REST.
+
+Utilizar substantivos para recursos.
+
+Exemplos:
+
+GET    /api/v1/vehicles
+GET    /api/v1/vehicles/{vehicle}
+POST   /api/v1/vehicles
+PUT    /api/v1/vehicles/{vehicle}
+DELETE /api/v1/vehicles/{vehicle}
+
+## Versionamento
+
+A API deve utilizar versionamento explícito:
+
+/api/v1/...
+
+Não criar múltiplas versões até que exista necessidade real.
+
+## HTTP Status Codes
+
+Utilizar status codes semanticamente corretos.
+
+- 200 — operação realizada com sucesso
+- 201 — recurso criado
+- 204 — operação realizada sem conteúdo
+- 400 — requisição inválida
+- 401 — não autenticado
+- 403 — não autorizado
+- 404 — recurso não encontrado
+- 409 — conflito de estado
+- 422 — erro de validação
+- 500 — erro inesperado
+
+## Responses
+
+Manter formato de resposta consistente.
+
+Exemplo:
+
+{
+    "data": {
+        "id": 1,
+        "name": "Honda CB 500"
+    }
+}
+
+Erros devem possuir estrutura previsível.
+
+Exemplo:
+
+{
+    "message": "The given data was invalid.",
+    "errors": {
+        "license_plate": [
+            "The license plate has already been taken."
+        ]
+    }
+}
+
+## Pagination
+
+Endpoints de listagem devem utilizar paginação quando o volume puder crescer.
+
+Não retornar coleções potencialmente grandes sem paginação.
+
+## Filtering
+
+Filtros devem ser explícitos e previsíveis.
+
+Exemplo:
+
+GET /api/v1/vehicles?type=motorcycle&status=available
+
+Evitar criar sistemas genéricos de filtros sem necessidade.
