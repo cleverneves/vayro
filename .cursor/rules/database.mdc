@@ -1,0 +1,83 @@
+---
+description: Regras para PostgreSQL, migrations e persistência.
+globs:
+  - "database/**/*.php"
+  - "app/Models/**/*.php"
+alwaysApply: false
+---
+
+# Database Rules
+
+## PostgreSQL
+
+PostgreSQL é o banco de dados principal do Vayro.
+
+Utilizar tipos e recursos do PostgreSQL quando trouxerem benefício real.
+
+## Migrations
+
+Toda alteração estrutural deve ser feita através de migration.
+
+Nunca modificar manualmente o schema como solução permanente.
+
+## Foreign Keys
+
+Relacionamentos devem possuir foreign keys quando aplicável.
+
+Definir explicitamente o comportamento de deleção.
+
+Exemplos:
+
+- cascade
+- restrict
+- nullOnDelete
+
+A decisão deve refletir a regra de negócio.
+
+## Índices
+
+Criar índices para:
+
+- foreign keys;
+- campos frequentemente utilizados em filtros;
+- campos utilizados para busca por unicidade;
+- campos envolvidos em consultas críticas.
+
+Não criar índices indiscriminadamente.
+
+## Constraints
+
+Regras fundamentais de integridade devem ser garantidas pelo banco quando
+possível.
+
+Exemplos:
+
+- unique;
+- not null;
+- foreign keys;
+- check constraints quando apropriado.
+
+## Eloquent
+
+Evitar N+1 queries.
+
+Utilizar eager loading quando necessário:
+
+Model::with(['relationship'])->get();
+
+## Transactions
+
+Utilizar transactions quando uma operação alterar múltiplas entidades
+e precisar ser atômica.
+
+Exemplo:
+
+DB::transaction(function () {
+    // operação
+});
+
+## Queries
+
+Preferir Eloquent e Query Builder.
+
+Raw SQL somente quando existir uma justificativa técnica.
