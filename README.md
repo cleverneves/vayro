@@ -1,11 +1,11 @@
 # Vayro — API de Locação de Veículos
 
-API REST para gerenciamento de locação de veículos, construída com **Laravel 11** e autenticada via **JWT**.
+API REST para gerenciamento de locação de veículos, construída com **Laravel 12** e autenticada via **JWT**.
 
 ## Stack
 
 - **PHP 8.2** (Alpine)
-- **Laravel 11**
+- **Laravel 12**
 - **PostgreSQL 16**
 - **Redis**
 - **Nginx**
