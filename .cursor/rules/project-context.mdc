@@ -1,0 +1,55 @@
+---
+description: Contexto geral e princípios do projeto Vayro.
+alwaysApply: true
+---
+
+# Vayro — Project Context
+
+Vayro é uma API REST para um sistema de locação de veículos, inicialmente
+focado em carros e motos.
+
+## Stack
+
+- Laravel 13
+- PHP 8.3+
+- PostgreSQL
+- Docker
+- PHPUnit/Pest conforme configuração existente do projeto
+
+## Objetivo
+
+Construir uma API simples, segura, testável e fácil de evoluir.
+
+O projeto é um MVP, portanto simplicidade e velocidade de desenvolvimento
+são prioridades.
+
+## Princípios
+
+- Preferir soluções nativas do Laravel.
+- Evitar abstrações desnecessárias.
+- Evitar over engineering.
+- Manter responsabilidades bem definidas.
+- Escrever código legível antes de escrever código "sofisticado".
+- Não criar abstrações sem uma necessidade real.
+- Não implementar funcionalidades que não fazem parte do requisito.
+- Preferir composição e recursos do framework.
+- Manter mudanças pequenas e focadas.
+
+## Regra principal
+
+Antes de criar uma nova camada, classe ou padrão arquitetural, verificar
+se o Laravel já possui uma solução adequada.
+
+Não introduzir automaticamente:
+
+- Repository Pattern
+- Service Layer genérico
+- CQRS
+- Event Sourcing
+- Domain-Driven Design
+- Hexagonal Architecture
+- Microservices
+- Message Bus
+
+Esses padrões somente devem ser introduzidos quando existir uma necessidade
+concreta e justificável.
