@@ -1,0 +1,71 @@
+---
+description: Regras de segurança da API Vayro.
+alwaysApply: true
+---
+
+# Security Rules
+
+## Input
+
+Nunca confiar em dados recebidos pelo cliente.
+
+Validar todas as entradas.
+
+## Mass Assignment
+
+Configurar explicitamente os atributos permitidos nos Models.
+
+Evitar liberar campos sensíveis indiscriminadamente.
+
+## Authentication
+
+Quando autenticação for implementada, utilizar mecanismos suportados
+pelo ecossistema Laravel.
+
+Não implementar autenticação customizada sem necessidade.
+
+## Authorization
+
+Regras de autorização devem ser implementadas com Policies/Gates quando
+apropriado.
+
+Autenticação e autorização são responsabilidades diferentes.
+
+## Secrets
+
+Nunca versionar:
+
+- passwords;
+- API keys;
+- tokens;
+- credentials;
+- secrets;
+- arquivos .env reais.
+
+## SQL Injection
+
+Não concatenar input do usuário em SQL.
+
+Preferir:
+
+- Eloquent;
+- Query Builder;
+- parâmetros vinculados.
+
+## API Responses
+
+Não retornar:
+
+- passwords;
+- tokens internos;
+- secrets;
+- informações internas da infraestrutura;
+- stack traces em produção.
+
+## Errors
+
+Mensagens de erro para clientes não devem expor detalhes internos da aplicação.
+
+## Logs
+
+Não registrar informações sensíveis.
