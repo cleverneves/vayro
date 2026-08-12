@@ -1,0 +1,72 @@
+---
+description: Padrões específicos para desenvolvimento Laravel 13.
+globs:
+  - "app/**/*.php"
+  - "routes/**/*.php"
+  - "database/**/*.php"
+  - "tests/**/*.php"
+alwaysApply: false
+---
+
+# Laravel 13 Rules
+
+## Framework
+
+Utilizar Laravel 13 e seguir suas convenções oficiais.
+
+A versão atual requer PHP 8.3 ou superior. :contentReference[oaicite:3]{index=3}
+
+## Preferências
+
+Preferir:
+
+- Eloquent;
+- Form Requests;
+- API Resources;
+- Policies;
+- route model binding;
+- dependency injection;
+- migrations;
+- factories;
+- seeders;
+- database transactions;
+- Laravel HTTP testing.
+
+## Routing
+
+Utilizar routes/api.php para endpoints da API.
+
+Preferir resource controllers quando o recurso possuir operações CRUD.
+
+Exemplo:
+
+Route::apiResource('vehicles', VehicleController::class);
+
+Utilizar rotas específicas somente quando a operação não representar
+adequadamente um CRUD tradicional.
+
+## Route Model Binding
+
+Preferir implicit route model binding em vez de buscar manualmente modelos
+pelo ID.
+
+## Configuration
+
+Não acessar env() diretamente dentro da aplicação.
+
+Utilizar config() quando o valor já estiver representado em configuração.
+
+## Exceptions
+
+Não utilizar try/catch indiscriminadamente.
+
+Capturar exceções somente quando houver necessidade de:
+
+- alterar o comportamento;
+- adicionar contexto;
+- retornar uma resposta específica;
+- executar compensação.
+
+## Laravel APIs
+
+Utilizar recursos nativos do Laravel antes de adicionar dependências externas.
