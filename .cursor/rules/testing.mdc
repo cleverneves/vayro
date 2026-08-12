@@ -1,0 +1,57 @@
+---
+description: Estratégia de testes do Vayro.
+globs:
+  - "tests/**/*.php"
+  - "app/**/*.php"
+alwaysApply: false
+---
+
+# Testing Rules
+
+## Objetivo
+
+Testes devem proteger comportamento, não implementação.
+
+## Prioridade
+
+Priorizar:
+
+1. Feature tests para endpoints HTTP.
+2. Unit tests para regras de negócio isoladas.
+3. Testes de integração com banco quando necessário.
+
+## API
+
+Todo endpoint importante deve possuir testes cobrindo pelo menos:
+
+- happy path;
+- validação;
+- recurso inexistente;
+- autorização quando aplicável;
+- conflitos de negócio relevantes.
+
+## Database
+
+Utilizar banco de teste isolado.
+
+Utilizar factories para criação de dados.
+
+Preferir estados de factory quando isso melhorar a legibilidade.
+
+## Testes
+
+Os testes devem ser:
+
+- determinísticos;
+- independentes;
+- legíveis;
+- rápidos;
+- focados em comportamento.
+
+Não escrever testes apenas para aumentar cobertura.
+
+## Após alterações
+
+Executar os testes relacionados à mudança.
+
+Se a alteração for relevante para o sistema, executar a suíte completa.
