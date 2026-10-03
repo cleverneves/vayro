@@ -90,6 +90,28 @@ class RentalService
         return $rental;
     }
 
+    public function listAll(User $actor): Collection
+    {
+        $this->assertAdmin($actor);
+
+        return $this->rentals->listAll();
+    }
+
+    public function showForAdmin(User $actor, int $rentalId): Rental
+    {
+        $this->assertAdmin($actor);
+
+        $rental = $this->rentals->findById($rentalId);
+        if ($rental === null) {
+            throw new BusinessRuleException(
+                BusinessRuleException::NOT_FOUND,
+                'Locação não encontrada.',
+            );
+        }
+
+        return $rental;
+    }
+
     private function requireRenter(User $actor): Cliente
     {
         $this->assertRenter($actor);
@@ -108,6 +130,16 @@ class RentalService
     private function assertRenter(User $actor): void
     {
         if ($actor->role !== 'renter') {
+            throw new BusinessRuleException(
+                BusinessRuleException::FORBIDDEN,
+                'Acesso recusado.',
+            );
+        }
+    }
+
+    private function assertAdmin(User $actor): void
+    {
+        if ($actor->role !== 'admin') {
             throw new BusinessRuleException(
                 BusinessRuleException::FORBIDDEN,
                 'Acesso recusado.',

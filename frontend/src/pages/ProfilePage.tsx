@@ -33,8 +33,8 @@ export default function ProfilePage({ onLogout, onGoToVehicles, onGoToRentals }:
           return
         }
         setNome(profile.nome)
-        setEmail(profile.email)
-        setTelefone(profile.telefone)
+        setEmail(profile.email ?? '')
+        setTelefone(profile.telefone ?? '')
       })
       .catch((error: unknown) => {
         if (cancelled) {
@@ -66,8 +66,8 @@ export default function ProfilePage({ onLogout, onGoToVehicles, onGoToRentals }:
     try {
       const profile = await updateMyProfile({ nome, email, telefone })
       setNome(profile.nome)
-      setEmail(profile.email)
-      setTelefone(profile.telefone)
+      setEmail(profile.email ?? '')
+      setTelefone(profile.telefone ?? '')
       setSuccess(true)
     } catch (error) {
       if (error instanceof ApiRequestError) {

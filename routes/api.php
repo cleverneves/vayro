@@ -35,6 +35,14 @@ Route::prefix('v2')->group(function () {
         Route::patch('locatarios/me', [RenterController::class, 'updateMe']);
         Route::get('carros/disponiveis', [RentalController::class, 'available']);
         Route::post('locacoes', [RentalController::class, 'store']);
+    });
+
+    Route::middleware(['jwt.auth', 'role:admin'])->group(function () {
+        Route::get('locatarios', [RenterController::class, 'index']);
+        Route::get('locatarios/{locatario}', [RenterController::class, 'show']);
+    });
+
+    Route::middleware('jwt.auth')->group(function () {
         Route::get('locacoes', [RentalController::class, 'index']);
         Route::get('locacoes/{locacao}', [RentalController::class, 'show']);
     });

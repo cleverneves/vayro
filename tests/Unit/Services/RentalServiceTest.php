@@ -398,6 +398,76 @@ class RentalServiceTest extends TestCase
         }
     }
 
+    public function test_admin_lists_all_rentals_of_any_status_and_date(): void
+    {
+        $admin = User::factory()->create();
+        $first = $this->renterActor();
+        $second = $this->renterActor();
+
+        $older = Rental::factory()->create([
+            'renter_id' => $this->renterId($first),
+            'requested_on' => $this->yesterday(),
+            'status' => Rental::STATUS_CANCELLED,
+        ]);
+        $newer = Rental::factory()->create([
+            'renter_id' => $this->renterId($second),
+            'requested_on' => $this->today(),
+            'starts_on' => $this->tomorrow(),
+            'status' => Rental::STATUS_REQUESTED,
+        ]);
+
+        $list = $this->service->listAll($admin);
+
+        $this->assertSame([$newer->id, $older->id], $list->pluck('id')->all());
+        $this->assertSame(2, $list->count());
+    }
+
+    public function test_admin_rental_list_is_empty_when_there_are_no_rentals(): void
+    {
+        $this->assertTrue($this->service->listAll(User::factory()->create())->isEmpty());
+    }
+
+    public function test_admin_shows_any_rental_and_rejects_missing_id(): void
+    {
+        $admin = User::factory()->create();
+        $rental = Rental::factory()->create([
+            'renter_id' => $this->renterId($this->renterActor()),
+            'status' => Rental::STATUS_COMPLETED,
+        ]);
+
+        $shown = $this->service->showForAdmin($admin, $rental->id);
+
+        $this->assertSame($rental->id, $shown->id);
+        $this->assertSame(Rental::STATUS_COMPLETED, $shown->status);
+
+        try {
+            $this->service->showForAdmin($admin, 999);
+            $this->fail('Expected missing rental to be not_found.');
+        } catch (BusinessRuleException $e) {
+            $this->assertSame(BusinessRuleException::NOT_FOUND, $e->domainCode());
+            $this->assertSame('Locação não encontrada.', $e->getMessage());
+        }
+    }
+
+    public function test_renter_is_forbidden_from_admin_rental_queries(): void
+    {
+        $renter = $this->renterActor();
+        $rental = Rental::factory()->create(['renter_id' => $this->renterId($renter)]);
+
+        foreach (['list', 'show'] as $action) {
+            try {
+                if ($action === 'list') {
+                    $this->service->listAll($renter);
+                } else {
+                    $this->service->showForAdmin($renter, $rental->id);
+                }
+                $this->fail('Expected renter admin rental query to be forbidden.');
+            } catch (BusinessRuleException $e) {
+                $this->assertSame(BusinessRuleException::FORBIDDEN, $e->domainCode());
+            }
+        }
+    }
+
     private function renterActor(): User
     {
         $user = User::factory()->renter()->create();

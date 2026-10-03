@@ -7,6 +7,7 @@ use App\Models\Cliente;
 use App\Models\User;
 use App\Repositories\RenterRepository;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -115,6 +116,38 @@ class RenterAccountService
             });
         } catch (QueryException $e) {
             $this->rethrowUniqueEmail($e);
+        }
+    }
+
+    public function listRenters(User $actor): Collection
+    {
+        $this->assertAdmin($actor);
+
+        return $this->renters->listAll();
+    }
+
+    public function showRenter(User $actor, int $renterId): Cliente
+    {
+        $this->assertAdmin($actor);
+
+        $renter = $this->renters->findById($renterId);
+        if ($renter === null) {
+            throw new BusinessRuleException(
+                BusinessRuleException::NOT_FOUND,
+                'Locatário não encontrado.',
+            );
+        }
+
+        return $renter;
+    }
+
+    private function assertAdmin(User $actor): void
+    {
+        if ($actor->role !== 'admin') {
+            throw new BusinessRuleException(
+                BusinessRuleException::FORBIDDEN,
+                'Acesso recusado.',
+            );
         }
     }
 

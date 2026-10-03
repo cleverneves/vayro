@@ -52,6 +52,28 @@ class RenterController extends Controller
         return new RenterResource($renter);
     }
 
+    public function index()
+    {
+        try {
+            $renters = $this->renters->listRenters(auth('api')->user());
+        } catch (BusinessRuleException $e) {
+            return $this->fromBusinessRule($e);
+        }
+
+        return RenterResource::collection($renters);
+    }
+
+    public function show(int $locatario)
+    {
+        try {
+            $renter = $this->renters->showRenter(auth('api')->user(), $locatario);
+        } catch (BusinessRuleException $e) {
+            return $this->fromBusinessRule($e);
+        }
+
+        return new RenterResource($renter);
+    }
+
     private function fromBusinessRule(BusinessRuleException $e): JsonResponse
     {
         if ($e->domainCode() === BusinessRuleException::EMAIL_TAKEN) {

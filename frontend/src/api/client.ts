@@ -4,8 +4,8 @@ import type { Papel } from '../auth/session'
 export type RenterProfile = {
   id: number
   nome: string
-  email: string
-  telefone: string
+  email: string | null
+  telefone: string | null
 }
 
 export type VehicleModel = {
@@ -172,6 +172,18 @@ export async function listMyRentals(): Promise<Rental[]> {
 
 export async function getMyRental(id: number): Promise<Rental> {
   const response = await request<{ data: Rental }>(`/api/v2/locacoes/${id}`)
+
+  return response.data
+}
+
+export async function listRenters(): Promise<RenterProfile[]> {
+  const response = await request<{ data: RenterProfile[] }>('/api/v2/locatarios')
+
+  return response.data
+}
+
+export async function getRenter(id: number): Promise<RenterProfile> {
+  const response = await request<{ data: RenterProfile }>(`/api/v2/locatarios/${id}`)
 
   return response.data
 }

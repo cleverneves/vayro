@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Cliente;
 use App\Models\User;
+use Illuminate\Support\Collection;
 
 class RenterRepository
 {
@@ -25,6 +26,11 @@ class RenterRepository
     public function findByUserId(int $userId): ?Cliente
     {
         return Cliente::query()->where('user_id', $userId)->first();
+    }
+
+    public function listAll(): Collection
+    {
+        return Cliente::query()->orderBy('id')->get();
     }
 
     public function emailTaken(string $email, ?int $exceptUserId = null, ?int $exceptClienteId = null): bool

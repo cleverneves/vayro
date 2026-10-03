@@ -172,6 +172,61 @@ class RenterAccountServiceTest extends TestCase
         ]);
     }
 
+    public function test_admin_lists_all_renters_including_legacy_and_those_without_rentals(): void
+    {
+        $admin = User::factory()->create();
+        $withAccount = $this->service->register($this->registration());
+        $legacy = Cliente::factory()->create(['nome' => 'Cliente Legado']);
+
+        $list = $this->service->listRenters($admin);
+
+        $this->assertSame([$withAccount->id, $legacy->id], $list->pluck('id')->all());
+        $this->assertNull($list->firstWhere('id', $legacy->id)->email);
+    }
+
+    public function test_admin_renter_list_is_empty_when_there_are_no_clientes(): void
+    {
+        $this->assertTrue($this->service->listRenters(User::factory()->create())->isEmpty());
+    }
+
+    public function test_admin_shows_renter_and_rejects_missing_id(): void
+    {
+        $admin = User::factory()->create();
+        $renter = $this->service->register($this->registration());
+
+        $shown = $this->service->showRenter($admin, $renter->id);
+
+        $this->assertSame($renter->id, $shown->id);
+        $this->assertSame('ana@example.com', $shown->email);
+
+        try {
+            $this->service->showRenter($admin, 999);
+            $this->fail('Expected missing renter to be not_found.');
+        } catch (BusinessRuleException $e) {
+            $this->assertSame(BusinessRuleException::NOT_FOUND, $e->domainCode());
+            $this->assertSame('Locatário não encontrado.', $e->getMessage());
+        }
+    }
+
+    public function test_renter_is_forbidden_from_admin_renter_queries(): void
+    {
+        $renter = $this->service->register($this->registration());
+        $actor = User::query()->findOrFail($renter->user_id);
+
+        foreach (['list', 'show'] as $action) {
+            try {
+                if ($action === 'list') {
+                    $this->service->listRenters($actor);
+                } else {
+                    $this->service->showRenter($actor, $renter->id);
+                }
+                $this->fail('Expected renter admin query to be forbidden.');
+            } catch (BusinessRuleException $e) {
+                $this->assertSame(BusinessRuleException::FORBIDDEN, $e->domainCode());
+            }
+        }
+    }
+
     /**
      * @param  array<string, string>  $overrides
      * @return array{name: string, email: string, phone: string, password: string}

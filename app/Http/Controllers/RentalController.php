@@ -49,8 +49,12 @@ class RentalController extends Controller
 
     public function index()
     {
+        $actor = auth('api')->user();
+
         try {
-            $rentals = $this->rentals->listForRenter(auth('api')->user());
+            $rentals = $actor->role === 'admin'
+                ? $this->rentals->listAll($actor)
+                : $this->rentals->listForRenter($actor);
         } catch (BusinessRuleException $e) {
             return $this->fromBusinessRule($e);
         }
@@ -60,8 +64,12 @@ class RentalController extends Controller
 
     public function show(int $locacao)
     {
+        $actor = auth('api')->user();
+
         try {
-            $rental = $this->rentals->showForRenter(auth('api')->user(), $locacao);
+            $rental = $actor->role === 'admin'
+                ? $this->rentals->showForAdmin($actor, $locacao)
+                : $this->rentals->showForRenter($actor, $locacao);
         } catch (BusinessRuleException $e) {
             return $this->fromBusinessRule($e);
         }

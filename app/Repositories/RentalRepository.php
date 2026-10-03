@@ -45,4 +45,21 @@ class RentalRepository
             ->whereKey($rentalId)
             ->first();
     }
+
+    public function listAll(): Collection
+    {
+        return Rental::query()
+            ->with(['renter', 'vehicle.modelo.marca'])
+            ->orderByDesc('requested_on')
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    public function findById(int $rentalId): ?Rental
+    {
+        return Rental::query()
+            ->with(['renter', 'vehicle.modelo.marca'])
+            ->whereKey($rentalId)
+            ->first();
+    }
 }

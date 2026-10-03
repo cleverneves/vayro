@@ -136,15 +136,15 @@
 
 ### Tests for User Story 4 (REQUIRED for business rules) ⚠️
 
-- [ ] T043 [US4] Unit tests for admin renter list/show, admin rental list/show, empty collections and renter `forbidden` in `tests/Unit/Services/RenterAccountServiceTest.php` and `tests/Unit/Services/RentalServiceTest.php`
+- [X] T043 [US4] Unit tests for admin renter list/show, admin rental list/show, empty collections and renter `forbidden` in `tests/Unit/Services/RenterAccountServiceTest.php` and `tests/Unit/Services/RentalServiceTest.php`
 
 ### Implementation for User Story 4
 
-- [ ] T044 [US4] Implement admin `listRenters` and `showRenter` in `app/Services/RenterAccountService.php` and `app/Repositories/RenterRepository.php`
-- [ ] T045 [US4] Implement admin `listAll` and `showForAdmin` in `app/Services/RentalService.php` and `app/Repositories/RentalRepository.php`
-- [ ] T046 [US4] Expose `GET /api/v2/locatarios` and `GET /api/v2/locatarios/{locatario}` (register `me` before `{locatario}`) in `app/Http/Controllers/RenterController.php` and `routes/api.php`
-- [ ] T047 [US4] Branch `index`/`show` of `GET /api/v2/locacoes` by role in `app/Http/Controllers/RentalController.php`
-- [ ] T048 [US4] Create admin renter and rental list/detail screens in `frontend/src/pages/AdminRentersPage.tsx`, `frontend/src/pages/AdminRenterDetailPage.tsx` and `frontend/src/pages/AdminRentalsPage.tsx`
+- [X] T044 [US4] Implement admin `listRenters` and `showRenter` in `app/Services/RenterAccountService.php` and `app/Repositories/RenterRepository.php`
+- [X] T045 [US4] Implement admin `listAll` and `showForAdmin` in `app/Services/RentalService.php` and `app/Repositories/RentalRepository.php`
+- [X] T046 [US4] Expose `GET /api/v2/locatarios` and `GET /api/v2/locatarios/{locatario}` (register `me` before `{locatario}`) in `app/Http/Controllers/RenterController.php` and `routes/api.php`
+- [X] T047 [US4] Branch `index`/`show` of `GET /api/v2/locacoes` by role in `app/Http/Controllers/RentalController.php`
+- [X] T048 [US4] Create admin renter and rental list/detail screens in `frontend/src/pages/AdminRentersPage.tsx`, `frontend/src/pages/AdminRenterDetailPage.tsx` and `frontend/src/pages/AdminRentalsPage.tsx`
 
 **Checkpoint**: Administrativo enxerga o conjunto completo; locatário é recusado nas listas administrativas
 
