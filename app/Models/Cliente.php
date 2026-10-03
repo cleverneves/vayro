@@ -9,7 +9,26 @@ class Cliente extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nome'];
+    protected $fillable = [
+        'nome',
+        'user_id',
+        'email',
+        'phone',
+    ];
+
+    protected $casts = [
+        'user_id' => 'integer',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function rentals()
+    {
+        return $this->hasMany(Rental::class, 'renter_id');
+    }
 
     public function locacoes()
     {

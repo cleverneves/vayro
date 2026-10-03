@@ -20,6 +20,11 @@ class Carro extends Model
         return $this->belongsTo(Modelo::class);
     }
 
+    public function rentals()
+    {
+        return $this->hasMany(Rental::class, 'vehicle_id');
+    }
+
     public function locacoes()
     {
         return $this->hasMany(Locacao::class);

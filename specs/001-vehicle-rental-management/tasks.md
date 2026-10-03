@@ -37,21 +37,21 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 [P] Add `users.role` (`renter`|`admin`, default `admin`) in `database/migrations/*_add_role_to_users_table.php`
-- [ ] T006 [P] Widen `clientes.nome` to 120 and add `user_id`, `email`, `phone` in `database/migrations/*_add_renter_account_columns_to_clientes_table.php`
-- [ ] T007 [P] Create `rentals` table with overlap index in `database/migrations/*_create_rentals_table.php`
-- [ ] T008 Update `User` fillable, casts and `cliente()` relation in `app/Models/User.php`
-- [ ] T009 [P] Update `Cliente` fillable, casts and `user()`/`rentals()` relations in `app/Models/Cliente.php`
-- [ ] T010 [P] Create `Rental` model with relations, casts and period helpers in `app/Models/Rental.php`
-- [ ] T011 [P] Add `rentals()` relation on `Carro` in `app/Models/Carro.php` without changing catalog fields
-- [ ] T012 Add `role` default `admin` and `renter()` state in `database/factories/UserFactory.php`
-- [ ] T013 [P] Add `user_id`, `email`, `phone` and widen `nome` in `database/factories/ClienteFactory.php`
-- [ ] T014 [P] Create `RentalFactory` with `requested` defaults in `database/factories/RentalFactory.php`
-- [ ] T015 Create `BusinessRuleException` with domain codes in `app/Exceptions/BusinessRuleException.php`
-- [ ] T016 [P] Create `EnsureUserRole` and register alias `role` in `app/Http/Middleware/EnsureUserRole.php` and `app/Http/Kernel.php`
-- [ ] T017 Add additive `papel` (`locatario`|`administrativo`) in `app/Http/Resources/UserResource.php` and login payload in `app/Http/Controllers/AuthController.php`
-- [ ] T018 [P] Create Portuguese/English vocabulary mapper in `app/Support/RentalVocabulary.php`
-- [ ] T019 Add empty `/api/v2` route group in `routes/api.php` without changing `/api/v1`
+- [X] T005 [P] Add `users.role` (`renter`|`admin`, default `admin`) in `database/migrations/*_add_role_to_users_table.php`
+- [X] T006 [P] Widen `clientes.nome` to 120 and add `user_id`, `email`, `phone` in `database/migrations/*_add_renter_account_columns_to_clientes_table.php`
+- [X] T007 [P] Create `rentals` table with overlap index in `database/migrations/*_create_rentals_table.php`
+- [X] T008 Update `User` fillable, casts and `cliente()` relation in `app/Models/User.php`
+- [X] T009 [P] Update `Cliente` fillable, casts and `user()`/`rentals()` relations in `app/Models/Cliente.php`
+- [X] T010 [P] Create `Rental` model with relations, casts and period helpers in `app/Models/Rental.php`
+- [X] T011 [P] Add `rentals()` relation on `Carro` in `app/Models/Carro.php` without changing catalog fields
+- [X] T012 Add `role` default `admin` and `renter()` state in `database/factories/UserFactory.php`
+- [X] T013 [P] Add `user_id`, `email`, `phone` and widen `nome` in `database/factories/ClienteFactory.php`
+- [X] T014 [P] Create `RentalFactory` with `requested` defaults in `database/factories/RentalFactory.php`
+- [X] T015 Create `BusinessRuleException` with domain codes in `app/Exceptions/BusinessRuleException.php`
+- [X] T016 [P] Create `EnsureUserRole` and register alias `role` in `app/Http/Middleware/EnsureUserRole.php` and `app/Http/Kernel.php`
+- [X] T017 Add additive `papel` (`locatario`|`administrativo`) in `app/Http/Resources/UserResource.php` and login payload in `app/Http/Controllers/AuthController.php`
+- [X] T018 [P] Create Portuguese/English vocabulary mapper in `app/Support/RentalVocabulary.php`
+- [X] T019 Add empty `/api/v2` route group in `routes/api.php` without changing `/api/v1`
 
 **Checkpoint**: Foundation ready — migrations apply, JWT login still works, `papel` is additive, `/api/v2` group exists
 

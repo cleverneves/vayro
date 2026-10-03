@@ -19,7 +19,9 @@ class AuthTest extends TestCase
             'password' => 'senha-correta',
         ]);
 
-        $response->assertOk()->assertJsonStructure(['token']);
+        $response->assertOk()
+            ->assertJsonStructure(['token', 'papel'])
+            ->assertJsonPath('papel', 'administrativo');
     }
 
     public function test_login_com_credenciais_invalidas_retorna_401(): void
@@ -54,6 +56,8 @@ class AuthTest extends TestCase
 
         $response = $this->getJson('/api/v1/me', $this->authHeaders($user));
 
-        $response->assertOk()->assertJsonPath('data.email', $user->email);
+        $response->assertOk()
+            ->assertJsonPath('data.email', $user->email)
+            ->assertJsonPath('data.papel', 'administrativo');
     }
 }

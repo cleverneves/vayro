@@ -19,6 +19,7 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -34,9 +35,17 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'role' => 'string',
     ];
 
-    // Rest omitted for brevity
+    protected $attributes = [
+        'role' => 'admin',
+    ];
+
+    public function cliente()
+    {
+        return $this->hasOne(Cliente::class);
+    }
 
     /**
      * @return mixed

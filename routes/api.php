@@ -24,3 +24,6 @@ Route::prefix('v1')->group(function () {
             ->parameters(['locacoes' => 'locacao']);
     });
 });
+
+Route::prefix('v2')->group(function () {
+});

@@ -12,7 +12,10 @@ class ClienteFactory extends Factory
     public function definition(): array
     {
         return [
-            'nome' => \Illuminate\Support\Str::limit($this->faker->name(), 30, ''),
+            'nome' => $this->faker->name(),
+            'user_id' => null,
+            'email' => null,
+            'phone' => null,
         ];
     }
 }

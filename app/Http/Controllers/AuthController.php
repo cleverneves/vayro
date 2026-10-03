@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Resources\UserResource;
+use App\Support\RentalVocabulary;
 
 class AuthController extends Controller
 {
@@ -15,7 +16,10 @@ class AuthController extends Controller
             return response()->json(['message' => 'Usuário ou senha inválida.'], 401);
         }
 
-        return response()->json(['token' => $token]);
+        return response()->json([
+            'token' => $token,
+            'papel' => RentalVocabulary::roleToPortuguese(auth('api')->user()->role),
+        ]);
     }
 
     public function logout()

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Support\RentalVocabulary;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserResource extends JsonResource
@@ -12,6 +13,7 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'papel' => RentalVocabulary::roleToPortuguese($this->role),
         ];
     }
 }
