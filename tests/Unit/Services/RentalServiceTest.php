@@ -1,0 +1,361 @@
+<?php
+
+namespace Tests\Unit\Services;
+
+use App\Exceptions\BusinessRuleException;
+use App\Models\Carro;
+use App\Models\Cliente;
+use App\Models\Rental;
+use App\Models\User;
+use App\Repositories\RentalRepository;
+use App\Repositories\RenterRepository;
+use App\Repositories\VehicleRepository;
+use App\Services\RentalService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class RentalServiceTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private RentalService $service;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->service = new RentalService(
+            new VehicleRepository(),
+            new RentalRepository(),
+            new RenterRepository(),
+        );
+    }
+
+    public function test_available_list_returns_only_free_vehicles_ordered_by_placa(): void
+    {
+        $actor = $this->renterActor();
+        $today = $this->today();
+        $bravo = Carro::factory()->indisponivel()->create(['placa' => 'BRA1A11']);
+        $alfa = Carro::factory()->create(['placa' => 'ALF1A11']);
+        $reserved = Carro::factory()->create(['placa' => 'RES1A11']);
+
+        Rental::factory()->create([
+            'vehicle_id' => $reserved->id,
+            'starts_on' => $today,
+            'day_count' => 2,
+            'status' => Rental::STATUS_REQUESTED,
+        ]);
+
+        $available = $this->service->listAvailableVehicles($actor, $today, 2);
+
+        $this->assertSame(['ALF1A11', 'BRA1A11'], $available->pluck('placa')->all());
+        $this->assertTrue($available->contains('id', $alfa->id));
+        $this->assertTrue($available->contains('id', $bravo->id));
+        $this->assertFalse($available->contains('id', $reserved->id));
+        $this->assertSame(1, Rental::query()->count());
+    }
+
+    public function test_available_list_is_empty_when_every_vehicle_is_reserved(): void
+    {
+        $actor = $this->renterActor();
+        $today = $this->today();
+        $vehicle = Carro::factory()->create();
+
+        Rental::factory()->create([
+            'vehicle_id' => $vehicle->id,
+            'starts_on' => $today,
+            'day_count' => 1,
+            'status' => Rental::STATUS_CONFIRMED,
+        ]);
+
+        $available = $this->service->listAvailableVehicles($actor, $today, 1);
+
+        $this->assertTrue($available->isEmpty());
+        $this->assertSame(1, Rental::query()->count());
+    }
+
+    public function test_available_list_rejects_invalid_period(): void
+    {
+        $actor = $this->renterActor();
+
+        foreach ([[$this->yesterday(), 1], [$this->today(), 0], [$this->today(), 91]] as [$startsOn, $dayCount]) {
+            try {
+                $this->service->listAvailableVehicles($actor, $startsOn, $dayCount);
+                $this->fail("Expected period {$startsOn}/{$dayCount} to be rejected.");
+            } catch (BusinessRuleException $e) {
+                $this->assertSame(BusinessRuleException::INVALID_PERIOD, $e->domainCode());
+            }
+        }
+    }
+
+    public function test_create_requested_rental_with_optional_comment(): void
+    {
+        $actor = $this->renterActor();
+        $vehicle = Carro::factory()->create();
+        $today = $this->today();
+
+        $withComment = $this->service->createForRenter($actor, [
+            'vehicle_id' => $vehicle->id,
+            'starts_on' => $today,
+            'day_count' => 2,
+            'reason' => Rental::REASON_TRIP,
+            'comment' => 'Viagem a trabalho',
+        ]);
+
+        $this->assertSame(Rental::STATUS_REQUESTED, $withComment->status);
+        $this->assertSame('Viagem a trabalho', $withComment->comment);
+        $this->assertSame($today, $withComment->requested_on->toDateString());
+        $this->assertSame($today, $withComment->starts_on->toDateString());
+        $this->assertSame(2, $withComment->day_count);
+
+        $otherVehicle = Carro::factory()->create();
+        $withoutComment = $this->service->createForRenter($actor, [
+            'vehicle_id' => $otherVehicle->id,
+            'starts_on' => $today,
+            'day_count' => 1,
+            'reason' => Rental::REASON_LEISURE,
+        ]);
+
+        $this->assertNull($withoutComment->comment);
+
+        $thirdVehicle = Carro::factory()->create();
+        $emptyComment = $this->service->createForRenter($actor, [
+            'vehicle_id' => $thirdVehicle->id,
+            'starts_on' => $today,
+            'day_count' => 1,
+            'reason' => Rental::REASON_EVERYDAY,
+            'comment' => '',
+        ]);
+
+        $this->assertNull($emptyComment->comment);
+    }
+
+    public function test_create_rejects_invalid_period_or_reason_without_inserting(): void
+    {
+        $actor = $this->renterActor();
+        $vehicle = Carro::factory()->create();
+
+        $invalid = [
+            ['starts_on' => $this->yesterday(), 'day_count' => 1, 'reason' => Rental::REASON_TRIP, 'code' => BusinessRuleException::INVALID_PERIOD],
+            ['starts_on' => $this->today(), 'day_count' => 0, 'reason' => Rental::REASON_TRIP, 'code' => BusinessRuleException::INVALID_PERIOD],
+            ['starts_on' => $this->today(), 'day_count' => 91, 'reason' => Rental::REASON_TRIP, 'code' => BusinessRuleException::INVALID_PERIOD],
+            ['starts_on' => $this->today(), 'day_count' => 1, 'reason' => 'viagem', 'code' => BusinessRuleException::INVALID_REASON],
+        ];
+
+        foreach ($invalid as $case) {
+            try {
+                $this->service->createForRenter($actor, [
+                    'vehicle_id' => $vehicle->id,
+                    'starts_on' => $case['starts_on'],
+                    'day_count' => $case['day_count'],
+                    'reason' => $case['reason'],
+                ]);
+                $this->fail('Expected invalid create to be rejected.');
+            } catch (BusinessRuleException $e) {
+                $this->assertSame($case['code'], $e->domainCode());
+            }
+        }
+
+        $this->assertSame(0, Rental::query()->count());
+    }
+
+    public function test_one_day_rental_does_not_block_the_next_day(): void
+    {
+        $actor = $this->renterActor();
+        $other = $this->renterActor();
+        $vehicle = Carro::factory()->create();
+
+        $this->service->createForRenter($actor, [
+            'vehicle_id' => $vehicle->id,
+            'starts_on' => $this->today(),
+            'day_count' => 1,
+            'reason' => Rental::REASON_TRIP,
+        ]);
+
+        $nextDay = $this->service->createForRenter($other, [
+            'vehicle_id' => $vehicle->id,
+            'starts_on' => $this->tomorrow(),
+            'day_count' => 1,
+            'reason' => Rental::REASON_TRIP,
+        ]);
+
+        $this->assertSame(Rental::STATUS_REQUESTED, $nextDay->status);
+        $this->assertSame(2, Rental::query()->where('vehicle_id', $vehicle->id)->count());
+    }
+
+    public function test_two_day_rental_blocks_the_next_day(): void
+    {
+        $actor = $this->renterActor();
+        $other = $this->renterActor();
+        $vehicle = Carro::factory()->create();
+
+        $this->service->createForRenter($actor, [
+            'vehicle_id' => $vehicle->id,
+            'starts_on' => $this->today(),
+            'day_count' => 2,
+            'reason' => Rental::REASON_TRIP,
+        ]);
+
+        try {
+            $this->service->createForRenter($other, [
+                'vehicle_id' => $vehicle->id,
+                'starts_on' => $this->tomorrow(),
+                'day_count' => 1,
+                'reason' => Rental::REASON_TRIP,
+            ]);
+            $this->fail('Expected overlapping two-day rental to be rejected.');
+        } catch (BusinessRuleException $e) {
+            $this->assertSame(BusinessRuleException::VEHICLE_UNAVAILABLE, $e->domainCode());
+        }
+
+        $this->assertSame(1, Rental::query()->count());
+    }
+
+    public function test_cancelled_and_completed_do_not_reserve_the_vehicle(): void
+    {
+        $actor = $this->renterActor();
+        $today = $this->today();
+        $cancelledVehicle = Carro::factory()->create();
+        $completedVehicle = Carro::factory()->create();
+
+        Rental::factory()->create([
+            'vehicle_id' => $cancelledVehicle->id,
+            'starts_on' => $today,
+            'day_count' => 2,
+            'status' => Rental::STATUS_CANCELLED,
+        ]);
+        Rental::factory()->create([
+            'vehicle_id' => $completedVehicle->id,
+            'starts_on' => $today,
+            'day_count' => 2,
+            'status' => Rental::STATUS_COMPLETED,
+        ]);
+
+        $available = $this->service->listAvailableVehicles($actor, $today, 2);
+
+        $this->assertTrue($available->contains('id', $cancelledVehicle->id));
+        $this->assertTrue($available->contains('id', $completedVehicle->id));
+
+        $created = $this->service->createForRenter($actor, [
+            'vehicle_id' => $cancelledVehicle->id,
+            'starts_on' => $today,
+            'day_count' => 2,
+            'reason' => Rental::REASON_TRIP,
+        ]);
+
+        $this->assertSame(Rental::STATUS_REQUESTED, $created->status);
+    }
+
+    public function test_reserving_statuses_block_the_vehicle(): void
+    {
+        $actor = $this->renterActor();
+        $today = $this->today();
+
+        foreach ([Rental::STATUS_REQUESTED, Rental::STATUS_CONFIRMED, Rental::STATUS_IN_PROGRESS] as $status) {
+            $vehicle = Carro::factory()->create();
+            Rental::factory()->create([
+                'vehicle_id' => $vehicle->id,
+                'starts_on' => $today,
+                'day_count' => 1,
+                'status' => $status,
+            ]);
+
+            try {
+                $this->service->createForRenter($actor, [
+                    'vehicle_id' => $vehicle->id,
+                    'starts_on' => $today,
+                    'day_count' => 1,
+                    'reason' => Rental::REASON_TRIP,
+                ]);
+                $this->fail("Expected status {$status} to reserve the vehicle.");
+            } catch (BusinessRuleException $e) {
+                $this->assertSame(BusinessRuleException::VEHICLE_UNAVAILABLE, $e->domainCode());
+            }
+        }
+    }
+
+    public function test_concurrent_create_on_same_vehicle_accepts_only_one(): void
+    {
+        $firstActor = $this->renterActor();
+        $secondActor = $this->renterActor();
+        $vehicle = Carro::factory()->create();
+        $payload = [
+            'vehicle_id' => $vehicle->id,
+            'starts_on' => $this->today(),
+            'day_count' => 3,
+            'reason' => Rental::REASON_TRIP,
+        ];
+
+        $accepted = $this->service->createForRenter($firstActor, $payload);
+
+        try {
+            $this->service->createForRenter($secondActor, $payload);
+            $this->fail('Expected the second concurrent request to be refused.');
+        } catch (BusinessRuleException $e) {
+            $this->assertSame(BusinessRuleException::VEHICLE_UNAVAILABLE, $e->domainCode());
+        }
+
+        $this->assertSame(Rental::STATUS_REQUESTED, $accepted->status);
+        $this->assertSame(1, Rental::query()->where('vehicle_id', $vehicle->id)->count());
+    }
+
+    public function test_create_rejects_missing_vehicle_and_non_renter(): void
+    {
+        $renter = $this->renterActor();
+        $admin = User::factory()->create();
+
+        try {
+            $this->service->createForRenter($renter, [
+                'vehicle_id' => 999,
+                'starts_on' => $this->today(),
+                'day_count' => 1,
+                'reason' => Rental::REASON_TRIP,
+            ]);
+            $this->fail('Expected missing vehicle to be unavailable.');
+        } catch (BusinessRuleException $e) {
+            $this->assertSame(BusinessRuleException::VEHICLE_UNAVAILABLE, $e->domainCode());
+        }
+
+        try {
+            $this->service->createForRenter($admin, [
+                'vehicle_id' => Carro::factory()->create()->id,
+                'starts_on' => $this->today(),
+                'day_count' => 1,
+                'reason' => Rental::REASON_TRIP,
+            ]);
+            $this->fail('Expected admin create to be forbidden.');
+        } catch (BusinessRuleException $e) {
+            $this->assertSame(BusinessRuleException::FORBIDDEN, $e->domainCode());
+        }
+
+        $this->assertSame(0, Rental::query()->count());
+    }
+
+    private function renterActor(): User
+    {
+        $user = User::factory()->renter()->create();
+        Cliente::factory()->create([
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'nome' => $user->name,
+            'phone' => '11999990000',
+        ]);
+
+        return $user->fresh();
+    }
+
+    private function today(): string
+    {
+        return now(config('rental.timezone'))->toDateString();
+    }
+
+    private function tomorrow(): string
+    {
+        return now(config('rental.timezone'))->addDay()->toDateString();
+    }
+
+    private function yesterday(): string
+    {
+        return now(config('rental.timezone'))->subDay()->toDateString();
+    }
+}

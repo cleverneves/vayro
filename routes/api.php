@@ -7,6 +7,7 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\LocacaoController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\ModeloController;
+use App\Http\Controllers\RentalController;
 use App\Http\Controllers\RenterController;
 
 Route::prefix('v1')->group(function () {
@@ -32,5 +33,7 @@ Route::prefix('v2')->group(function () {
     Route::middleware(['jwt.auth', 'role:renter'])->group(function () {
         Route::get('locatarios/me', [RenterController::class, 'me']);
         Route::patch('locatarios/me', [RenterController::class, 'updateMe']);
+        Route::get('carros/disponiveis', [RentalController::class, 'available']);
+        Route::post('locacoes', [RentalController::class, 'store']);
     });
 });

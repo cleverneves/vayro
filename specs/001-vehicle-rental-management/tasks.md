@@ -90,19 +90,19 @@
 
 ### Tests for User Story 2 (REQUIRED for business rules) ⚠️
 
-- [ ] T029 [P] [US2] Unit tests for available list, create `requested`, optional comment, invalid period/reason, overlap (1-day vs 2-day), cancelled/completed not reserving, and concurrent lock in `tests/Unit/Services/RentalServiceTest.php`
+- [X] T029 [P] [US2] Unit tests for available list, create `requested`, optional comment, invalid period/reason, overlap (1-day vs 2-day), cancelled/completed not reserving, and concurrent lock in `tests/Unit/Services/RentalServiceTest.php`
 
 ### Implementation for User Story 2
 
-- [ ] T030 [P] [US2] Implement `VehicleRepository` available-in-period query (ignore `carros.disponivel`) in `app/Repositories/VehicleRepository.php`
-- [ ] T031 [P] [US2] Implement `RentalRepository` create, overlapping-reserving query and `lockForUpdate` on `carros` in `app/Repositories/RentalRepository.php`
-- [ ] T032 [US2] Implement `listAvailableVehicles` and `createForRenter` in `app/Services/RentalService.php` (depends on T030, T031)
-- [ ] T033 [P] [US2] Create `ListAvailableVehiclesRequest` (`data_inicio`, `quantidade_dias`) in `app/Http/Requests/ListAvailableVehiclesRequest.php`
-- [ ] T034 [P] [US2] Create `StoreRentalRequest` (`automovel_id`, `data_inicio`, `quantidade_dias`, `motivo`, `comentario`) in `app/Http/Requests/StoreRentalRequest.php`
-- [ ] T035 [P] [US2] Create `AvailableVehicleResource` (placa, modelo, marca; no `disponivel`/km/preço) in `app/Http/Resources/AvailableVehicleResource.php`
-- [ ] T036 [P] [US2] Create `RentalResource` with período, motivo, status and observação in Portuguese in `app/Http/Resources/RentalResource.php`
-- [ ] T037 [US2] Implement `available` and `store` in `app/Http/Controllers/RentalController.php` and routes `GET /api/v2/carros/disponiveis`, `POST /api/v2/locacoes` in `routes/api.php`
-- [ ] T038 [US2] Create period + available vehicles + request form screens in `frontend/src/pages/AvailableVehiclesPage.tsx` and `frontend/src/pages/NewRentalPage.tsx`
+- [X] T030 [P] [US2] Implement `VehicleRepository` available-in-period query (ignore `carros.disponivel`) in `app/Repositories/VehicleRepository.php`
+- [X] T031 [P] [US2] Implement `RentalRepository` create, overlapping-reserving query and `lockForUpdate` on `carros` in `app/Repositories/RentalRepository.php`
+- [X] T032 [US2] Implement `listAvailableVehicles` and `createForRenter` in `app/Services/RentalService.php` (depends on T030, T031)
+- [X] T033 [P] [US2] Create `ListAvailableVehiclesRequest` (`data_inicio`, `quantidade_dias`) in `app/Http/Requests/ListAvailableVehiclesRequest.php`
+- [X] T034 [P] [US2] Create `StoreRentalRequest` (`automovel_id`, `data_inicio`, `quantidade_dias`, `motivo`, `comentario`) in `app/Http/Requests/StoreRentalRequest.php`
+- [X] T035 [P] [US2] Create `AvailableVehicleResource` (placa, modelo, marca; no `disponivel`/km/preço) in `app/Http/Resources/AvailableVehicleResource.php`
+- [X] T036 [P] [US2] Create `RentalResource` with período, motivo, status and observação in Portuguese in `app/Http/Resources/RentalResource.php`
+- [X] T037 [US2] Implement `available` and `store` in `app/Http/Controllers/RentalController.php` and routes `GET /api/v2/carros/disponiveis`, `POST /api/v2/locacoes` in `routes/api.php`
+- [X] T038 [US2] Create period + available vehicles + request form screens in `frontend/src/pages/AvailableVehiclesPage.tsx` and `frontend/src/pages/NewRentalPage.tsx`
 
 **Checkpoint**: Solicitação válida nasce `solicitada`; período inválido ou automóvel reservado não grava linha
 

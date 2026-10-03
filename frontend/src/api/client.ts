@@ -8,6 +8,40 @@ export type RenterProfile = {
   telefone: string
 }
 
+export type VehicleModel = {
+  id: number
+  nome: string
+  marca: {
+    id: number
+    nome: string
+  }
+}
+
+export type AvailableVehicle = {
+  id: number
+  placa: string
+  modelo: VehicleModel
+}
+
+export type Motivo = 'viagem' | 'passeio' | 'dia-a-dia'
+
+export type Rental = {
+  id: number
+  locatario: RenterProfile
+  automovel: AvailableVehicle
+  data_inicio: string
+  quantidade_dias: number
+  periodo: {
+    data_inicio: string
+    data_fim: string
+  }
+  motivo: Motivo
+  comentario: string | null
+  status: string
+  observacao: string | null
+  data_solicitacao: string
+}
+
 export class ApiRequestError extends Error {
   constructor(
     message: string,
@@ -94,6 +128,36 @@ export async function updateMyProfile(body: {
 }): Promise<RenterProfile> {
   const response = await request<{ data: RenterProfile }>('/api/v2/locatarios/me', {
     method: 'PATCH',
+    body: JSON.stringify(body),
+  })
+
+  return response.data
+}
+
+export async function listAvailableVehicles(
+  dataInicio: string,
+  quantidadeDias: number,
+): Promise<AvailableVehicle[]> {
+  const query = new URLSearchParams({
+    data_inicio: dataInicio,
+    quantidade_dias: String(quantidadeDias),
+  })
+  const response = await request<{ data: AvailableVehicle[] }>(
+    `/api/v2/carros/disponiveis?${query.toString()}`,
+  )
+
+  return response.data
+}
+
+export async function createRental(body: {
+  automovel_id: number
+  data_inicio: string
+  quantidade_dias: number
+  motivo: Motivo
+  comentario?: string
+}): Promise<Rental> {
+  const response = await request<{ data: Rental }>('/api/v2/locacoes', {
+    method: 'POST',
     body: JSON.stringify(body),
   })
 
