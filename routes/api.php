@@ -35,5 +35,7 @@ Route::prefix('v2')->group(function () {
         Route::patch('locatarios/me', [RenterController::class, 'updateMe']);
         Route::get('carros/disponiveis', [RentalController::class, 'available']);
         Route::post('locacoes', [RentalController::class, 'store']);
+        Route::get('locacoes', [RentalController::class, 'index']);
+        Route::get('locacoes/{locacao}', [RentalController::class, 'show']);
     });
 });

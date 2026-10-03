@@ -116,13 +116,13 @@
 
 ### Tests for User Story 3 (REQUIRED for business rules) ⚠️
 
-- [ ] T039 [US3] Unit tests for owner list, owner show, foreign/missing id as `not_found`, and empty list in `tests/Unit/Services/RentalServiceTest.php`
+- [X] T039 [US3] Unit tests for owner list, owner show, foreign/missing id as `not_found`, and empty list in `tests/Unit/Services/RentalServiceTest.php`
 
 ### Implementation for User Story 3
 
-- [ ] T040 [US3] Implement `listForRenter` and `showForRenter` (filter `renter_id`, never leak fields) in `app/Services/RentalService.php` and `app/Repositories/RentalRepository.php`
-- [ ] T041 [US3] Expose `GET /api/v2/locacoes` and `GET /api/v2/locacoes/{locacao}` for renter in `app/Http/Controllers/RentalController.php` and `routes/api.php`
-- [ ] T042 [US3] Create renter rental list and detail screens in `frontend/src/pages/MyRentalsPage.tsx` and `frontend/src/pages/RentalDetailPage.tsx`
+- [X] T040 [US3] Implement `listForRenter` and `showForRenter` (filter `renter_id`, never leak fields) in `app/Services/RentalService.php` and `app/Repositories/RentalRepository.php`
+- [X] T041 [US3] Expose `GET /api/v2/locacoes` and `GET /api/v2/locacoes/{locacao}` for renter in `app/Http/Controllers/RentalController.php` and `routes/api.php`
+- [X] T042 [US3] Create renter rental list and detail screens in `frontend/src/pages/MyRentalsPage.tsx` and `frontend/src/pages/RentalDetailPage.tsx`
 
 **Checkpoint**: Isolamento entre locatários vale na lista e no detalhe; lista vazia não mostra locação alheia
 

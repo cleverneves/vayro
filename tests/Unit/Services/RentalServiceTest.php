@@ -331,6 +331,73 @@ class RentalServiceTest extends TestCase
         $this->assertSame(0, Rental::query()->count());
     }
 
+    public function test_renter_lists_only_own_rentals_in_requested_order(): void
+    {
+        $owner = $this->renterActor();
+        $other = $this->renterActor();
+        $ownerId = $this->renterId($owner);
+
+        $older = Rental::factory()->create([
+            'renter_id' => $ownerId,
+            'requested_on' => $this->yesterday(),
+        ]);
+        $newer = Rental::factory()->create([
+            'renter_id' => $ownerId,
+            'requested_on' => $this->today(),
+        ]);
+        $sameDayLater = Rental::factory()->create([
+            'renter_id' => $ownerId,
+            'requested_on' => $this->today(),
+        ]);
+        Rental::factory()->create([
+            'renter_id' => $this->renterId($other),
+            'requested_on' => $this->today(),
+        ]);
+
+        $list = $this->service->listForRenter($owner);
+
+        $this->assertSame(
+            [$sameDayLater->id, $newer->id, $older->id],
+            $list->pluck('id')->all(),
+        );
+        $this->assertTrue($list->every(fn (Rental $rental) => $rental->renter_id === $ownerId));
+    }
+
+    public function test_renter_without_rentals_sees_empty_list_and_not_foreign_ones(): void
+    {
+        $empty = $this->renterActor();
+        $other = $this->renterActor();
+        Rental::factory()->create(['renter_id' => $this->renterId($other)]);
+
+        $list = $this->service->listForRenter($empty);
+
+        $this->assertTrue($list->isEmpty());
+        $this->assertSame(1, Rental::query()->count());
+    }
+
+    public function test_renter_shows_own_rental_and_rejects_foreign_or_missing_id(): void
+    {
+        $owner = $this->renterActor();
+        $other = $this->renterActor();
+        $own = Rental::factory()->create(['renter_id' => $this->renterId($owner)]);
+        $foreign = Rental::factory()->create(['renter_id' => $this->renterId($other)]);
+
+        $shown = $this->service->showForRenter($owner, $own->id);
+
+        $this->assertSame($own->id, $shown->id);
+        $this->assertSame($this->renterId($owner), $shown->renter_id);
+
+        foreach ([$foreign->id, 999] as $id) {
+            try {
+                $this->service->showForRenter($owner, $id);
+                $this->fail("Expected rental {$id} to be not_found.");
+            } catch (BusinessRuleException $e) {
+                $this->assertSame(BusinessRuleException::NOT_FOUND, $e->domainCode());
+                $this->assertSame('Locação não encontrada.', $e->getMessage());
+            }
+        }
+    }
+
     private function renterActor(): User
     {
         $user = User::factory()->renter()->create();
@@ -342,6 +409,11 @@ class RentalServiceTest extends TestCase
         ]);
 
         return $user->fresh();
+    }
+
+    private function renterId(User $actor): int
+    {
+        return (int) Cliente::query()->where('user_id', $actor->id)->value('id');
     }
 
     private function today(): string

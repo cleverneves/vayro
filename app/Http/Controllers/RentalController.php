@@ -47,6 +47,28 @@ class RentalController extends Controller
         return (new RentalResource($rental))->response()->setStatusCode(201);
     }
 
+    public function index()
+    {
+        try {
+            $rentals = $this->rentals->listForRenter(auth('api')->user());
+        } catch (BusinessRuleException $e) {
+            return $this->fromBusinessRule($e);
+        }
+
+        return RentalResource::collection($rentals);
+    }
+
+    public function show(int $locacao)
+    {
+        try {
+            $rental = $this->rentals->showForRenter(auth('api')->user(), $locacao);
+        } catch (BusinessRuleException $e) {
+            return $this->fromBusinessRule($e);
+        }
+
+        return new RentalResource($rental);
+    }
+
     private function fromBusinessRule(BusinessRuleException $e): JsonResponse
     {
         if ($e->domainCode() === BusinessRuleException::INVALID_PERIOD) {

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\BusinessRuleException;
+use App\Models\Cliente;
 use App\Models\Rental;
 use App\Models\User;
 use App\Repositories\RentalRepository;
@@ -31,15 +32,7 @@ class RentalService
 
     public function createForRenter(User $actor, array $data): Rental
     {
-        $this->assertRenter($actor);
-
-        $renter = $this->renters->findByUserId($actor->id);
-        if ($renter === null) {
-            throw new BusinessRuleException(
-                BusinessRuleException::NOT_FOUND,
-                'Locatário não encontrado.',
-            );
-        }
+        $renter = $this->requireRenter($actor);
 
         $startsOn = $data['starts_on'];
         $dayCount = (int) $data['day_count'];
@@ -73,6 +66,43 @@ class RentalService
                 'requested_on' => now(config('rental.timezone'))->toDateString(),
             ]);
         });
+    }
+
+    public function listForRenter(User $actor): Collection
+    {
+        $renter = $this->requireRenter($actor);
+
+        return $this->rentals->listForRenter($renter->id);
+    }
+
+    public function showForRenter(User $actor, int $rentalId): Rental
+    {
+        $renter = $this->requireRenter($actor);
+        $rental = $this->rentals->findForRenter($renter->id, $rentalId);
+
+        if ($rental === null) {
+            throw new BusinessRuleException(
+                BusinessRuleException::NOT_FOUND,
+                'Locação não encontrada.',
+            );
+        }
+
+        return $rental;
+    }
+
+    private function requireRenter(User $actor): Cliente
+    {
+        $this->assertRenter($actor);
+
+        $renter = $this->renters->findByUserId($actor->id);
+        if ($renter === null) {
+            throw new BusinessRuleException(
+                BusinessRuleException::NOT_FOUND,
+                'Locatário não encontrado.',
+            );
+        }
+
+        return $renter;
     }
 
     private function assertRenter(User $actor): void

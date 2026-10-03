@@ -12,9 +12,10 @@ import { clearSession } from '../auth/session'
 type ProfilePageProps = {
   onLogout: () => void
   onGoToVehicles: () => void
+  onGoToRentals: () => void
 }
 
-export default function ProfilePage({ onLogout, onGoToVehicles }: ProfilePageProps) {
+export default function ProfilePage({ onLogout, onGoToVehicles, onGoToRentals }: ProfilePageProps) {
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [telefone, setTelefone] = useState('')
@@ -125,6 +126,9 @@ export default function ProfilePage({ onLogout, onGoToVehicles }: ProfilePagePro
         </Button>
         <Button type="button" onClick={onGoToVehicles}>
           Solicitar locação
+        </Button>
+        <Button type="button" onClick={onGoToRentals}>
+          Minhas locações
         </Button>
         <Button type="button" onClick={handleLogout}>
           Sair

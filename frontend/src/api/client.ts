@@ -163,3 +163,15 @@ export async function createRental(body: {
 
   return response.data
 }
+
+export async function listMyRentals(): Promise<Rental[]> {
+  const response = await request<{ data: Rental[] }>('/api/v2/locacoes')
+
+  return response.data
+}
+
+export async function getMyRental(id: number): Promise<Rental> {
+  const response = await request<{ data: Rental }>(`/api/v2/locacoes/${id}`)
+
+  return response.data
+}
