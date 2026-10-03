@@ -65,18 +65,18 @@
 
 ### Tests for User Story 1 (REQUIRED for business rules) ⚠️
 
-- [ ] T020 [P] [US1] Unit tests for register, unique email, own profile update and foreign profile refusal in `tests/Unit/Services/RenterAccountServiceTest.php`
+- [X] T020 [P] [US1] Unit tests for register, unique email, own profile update and foreign profile refusal in `tests/Unit/Services/RenterAccountServiceTest.php`
 
 ### Implementation for User Story 1
 
-- [ ] T021 [P] [US1] Implement `RenterRepository` create/find/update and unique-email lookup in `app/Repositories/RenterRepository.php`
-- [ ] T022 [US1] Implement `RenterAccountService` transactional register and self-update in `app/Services/RenterAccountService.php` (depends on T021)
-- [ ] T023 [P] [US1] Create `RegisterRenterRequest` (nome, email, telefone, senha) in `app/Http/Requests/RegisterRenterRequest.php`
-- [ ] T024 [P] [US1] Create `UpdateRenterProfileRequest` (nome, email, telefone; no senha/papel) in `app/Http/Requests/UpdateRenterProfileRequest.php`
-- [ ] T025 [P] [US1] Create `RenterResource` (`id`, `nome`, `email`, `telefone`) in `app/Http/Resources/RenterResource.php`
-- [ ] T026 [US1] Implement `store`, `me` and `updateMe` in `app/Http/Controllers/RenterController.php` and routes `POST /api/v2/locatarios`, `GET|PATCH /api/v2/locatarios/me` in `routes/api.php`
-- [ ] T027 [P] [US1] Create API client and JWT/`papel` session module in `frontend/src/api/client.ts` and `frontend/src/auth/session.ts`
-- [ ] T028 [US1] Create register, login and profile screens in `frontend/src/pages/RegisterPage.tsx`, `frontend/src/pages/LoginPage.tsx` and `frontend/src/pages/ProfilePage.tsx` (depends on T027)
+- [X] T021 [P] [US1] Implement `RenterRepository` create/find/update and unique-email lookup in `app/Repositories/RenterRepository.php`
+- [X] T022 [US1] Implement `RenterAccountService` transactional register and self-update in `app/Services/RenterAccountService.php` (depends on T021)
+- [X] T023 [P] [US1] Create `RegisterRenterRequest` (nome, email, telefone, senha) in `app/Http/Requests/RegisterRenterRequest.php`
+- [X] T024 [P] [US1] Create `UpdateRenterProfileRequest` (nome, email, telefone; no senha/papel) in `app/Http/Requests/UpdateRenterProfileRequest.php`
+- [X] T025 [P] [US1] Create `RenterResource` (`id`, `nome`, `email`, `telefone`) in `app/Http/Resources/RenterResource.php`
+- [X] T026 [US1] Implement `store`, `me` and `updateMe` in `app/Http/Controllers/RenterController.php` and routes `POST /api/v2/locatarios`, `GET|PATCH /api/v2/locatarios/me` in `routes/api.php`
+- [X] T027 [P] [US1] Create API client and JWT/`papel` session module in `frontend/src/api/client.ts` and `frontend/src/auth/session.ts`
+- [X] T028 [US1] Create register, login and profile screens in `frontend/src/pages/RegisterPage.tsx`, `frontend/src/pages/LoginPage.tsx` and `frontend/src/pages/ProfilePage.tsx` (depends on T027)
 
 **Checkpoint**: Cadastro, login v1, perfil próprio e recusa de e-mail/titularidade funcionam de forma independente
 

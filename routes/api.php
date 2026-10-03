@@ -7,6 +7,7 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\LocacaoController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\ModeloController;
+use App\Http\Controllers\RenterController;
 
 Route::prefix('v1')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
@@ -26,4 +27,10 @@ Route::prefix('v1')->group(function () {
 });
 
 Route::prefix('v2')->group(function () {
+    Route::post('locatarios', [RenterController::class, 'store']);
+
+    Route::middleware(['jwt.auth', 'role:renter'])->group(function () {
+        Route::get('locatarios/me', [RenterController::class, 'me']);
+        Route::patch('locatarios/me', [RenterController::class, 'updateMe']);
+    });
 });
