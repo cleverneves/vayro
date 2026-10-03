@@ -7,6 +7,7 @@ use App\Http\Requests\ListAvailableVehiclesRequest;
 use App\Http\Requests\StoreRentalRequest;
 use App\Http\Requests\UpdateRentalRequest;
 use App\Http\Resources\AvailableVehicleResource;
+use App\Http\Resources\DailyCountResource;
 use App\Http\Resources\RentalResource;
 use App\Services\RentalService;
 use Illuminate\Http\JsonResponse;
@@ -61,6 +62,17 @@ class RentalController extends Controller
         }
 
         return RentalResource::collection($rentals);
+    }
+
+    public function dailyCount()
+    {
+        try {
+            $summary = $this->rentals->countRequestedOnCurrentDay(auth('api')->user());
+        } catch (BusinessRuleException $e) {
+            return $this->fromBusinessRule($e);
+        }
+
+        return new DailyCountResource($summary);
     }
 
     public function show(int $locacao)

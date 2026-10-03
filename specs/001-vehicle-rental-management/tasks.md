@@ -179,13 +179,13 @@
 
 ### Tests for User Story 6 (REQUIRED for business rules) ⚠️
 
-- [ ] T054 [US6] Unit tests for today's count including cancelled and future start, excluding other days, zero, and renter `forbidden` in `tests/Unit/Services/RentalServiceTest.php`
+- [X] T054 [US6] Unit tests for today's count including cancelled and future start, excluding other days, zero, and renter `forbidden` in `tests/Unit/Services/RentalServiceTest.php`
 
 ### Implementation for User Story 6
 
-- [ ] T055 [US6] Implement `countRequestedOnCurrentDay` using `config/rental.php` timezone in `app/Services/RentalService.php` and `app/Repositories/RentalRepository.php`
-- [ ] T056 [US6] Expose `GET /api/v2/locacoes/quantidade-do-dia` before `/{locacao}` in `app/Http/Controllers/RentalController.php` and `routes/api.php`
-- [ ] T057 [US6] Show daily count in the admin area in `frontend/src/pages/AdminDailyCountPage.tsx`
+- [X] T055 [US6] Implement `countRequestedOnCurrentDay` using `config/rental.php` timezone in `app/Services/RentalService.php` and `app/Repositories/RentalRepository.php`
+- [X] T056 [US6] Expose `GET /api/v2/locacoes/quantidade-do-dia` before `/{locacao}` in `app/Http/Controllers/RentalController.php` and `routes/api.php`
+- [X] T057 [US6] Show daily count in the admin area in `frontend/src/pages/AdminDailyCountPage.tsx`
 
 **Checkpoint**: Contagem do dia coincide com `requested_on` de hoje; locatário recebe `403` sem o número
 

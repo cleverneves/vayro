@@ -11,12 +11,14 @@ import { clearSession } from '../auth/session'
 type AdminRentersPageProps = {
   onOpenRenter: (id: number) => void
   onGoToRentals: () => void
+  onGoToDailyCount: () => void
   onLogout: () => void
 }
 
 export default function AdminRentersPage({
   onOpenRenter,
   onGoToRentals,
+  onGoToDailyCount,
   onLogout,
 }: AdminRentersPageProps) {
   const [renters, setRenters] = useState<RenterProfile[]>([])
@@ -83,6 +85,9 @@ export default function AdminRentersPage({
         ))}
         <Button type="button" onClick={onGoToRentals}>
           Locações
+        </Button>
+        <Button type="button" onClick={onGoToDailyCount}>
+          Quantidade do dia
         </Button>
         <Button type="button" onClick={handleLogout}>
           Sair

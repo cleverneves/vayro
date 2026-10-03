@@ -195,6 +195,17 @@ export async function getRenter(id: number): Promise<RenterProfile> {
   return response.data
 }
 
+export type DailyCount = {
+  data: string
+  quantidade: number
+}
+
+export async function getDailyCount(): Promise<DailyCount> {
+  const response = await request<{ data: DailyCount }>('/api/v2/locacoes/quantidade-do-dia')
+
+  return response.data
+}
+
 export async function updateRental(
   id: number,
   body: { status?: RentalStatus; observacao?: string | null },

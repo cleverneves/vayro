@@ -78,4 +78,9 @@ class RentalRepository
 
         return $rental->fresh(['renter', 'vehicle.modelo.marca']);
     }
+
+    public function countRequestedOn(string $requestedOn): int
+    {
+        return Rental::query()->whereDate('requested_on', $requestedOn)->count();
+    }
 }

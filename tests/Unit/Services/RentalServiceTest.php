@@ -631,6 +631,65 @@ class RentalServiceTest extends TestCase
         $this->assertSame(Rental::STATUS_REQUESTED, $rental->fresh()->status);
     }
 
+    public function test_daily_count_includes_cancelled_and_future_start_and_excludes_other_days(): void
+    {
+        $admin = User::factory()->create();
+        $today = $this->today();
+        $tomorrow = $this->tomorrow();
+        $yesterday = $this->yesterday();
+
+        Rental::factory()->create([
+            'requested_on' => $today,
+            'starts_on' => $today,
+            'status' => Rental::STATUS_CANCELLED,
+        ]);
+        Rental::factory()->create([
+            'requested_on' => $today,
+            'starts_on' => $tomorrow,
+            'status' => Rental::STATUS_REQUESTED,
+        ]);
+        Rental::factory()->create([
+            'requested_on' => $yesterday,
+            'starts_on' => $today,
+            'day_count' => 2,
+            'status' => Rental::STATUS_CONFIRMED,
+        ]);
+
+        $summary = $this->service->countRequestedOnCurrentDay($admin);
+
+        $this->assertSame($today, $summary['date']);
+        $this->assertSame(2, $summary['count']);
+    }
+
+    public function test_daily_count_is_zero_when_nothing_was_requested_today(): void
+    {
+        $admin = User::factory()->create();
+
+        Rental::factory()->create([
+            'requested_on' => $this->yesterday(),
+            'starts_on' => $this->today(),
+        ]);
+
+        $summary = $this->service->countRequestedOnCurrentDay($admin);
+
+        $this->assertSame($this->today(), $summary['date']);
+        $this->assertSame(0, $summary['count']);
+    }
+
+    public function test_renter_cannot_see_daily_count(): void
+    {
+        Rental::factory()->create([
+            'requested_on' => $this->today(),
+        ]);
+
+        try {
+            $this->service->countRequestedOnCurrentDay($this->renterActor());
+            $this->fail('Expected renter daily count to be forbidden.');
+        } catch (BusinessRuleException $e) {
+            $this->assertSame(BusinessRuleException::FORBIDDEN, $e->domainCode());
+        }
+    }
+
     private function renterActor(): User
     {
         $user = User::factory()->renter()->create();

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { getPapel, getToken } from './auth/session'
+import AdminDailyCountPage from './pages/AdminDailyCountPage'
 import AdminRentalDetailPage from './pages/AdminRentalDetailPage'
 import AdminRenterDetailPage from './pages/AdminRenterDetailPage'
 import AdminRentalsPage from './pages/AdminRentalsPage'
@@ -25,6 +26,7 @@ type Screen =
   | 'admin-renter-detail'
   | 'admin-rentals'
   | 'admin-rental-detail'
+  | 'admin-daily-count'
 
 function homeScreen(): Screen {
   if (!getToken()) {
@@ -89,6 +91,7 @@ export default function App() {
           setScreen('admin-renter-detail')
         }}
         onGoToRentals={() => setScreen('admin-rentals')}
+        onGoToDailyCount={() => setScreen('admin-daily-count')}
         onLogout={() => setScreen('login')}
       />
     )
@@ -122,6 +125,10 @@ export default function App() {
         onBack={() => setScreen('admin-rentals')}
       />
     )
+  }
+
+  if (screen === 'admin-daily-count') {
+    return <AdminDailyCountPage onBack={() => setScreen('admin-renters')} />
   }
 
   if (screen === 'profile') {

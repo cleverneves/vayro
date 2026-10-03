@@ -158,6 +158,21 @@ class RentalService
         });
     }
 
+    /**
+     * @return array{date: string, count: int}
+     */
+    public function countRequestedOnCurrentDay(User $actor): array
+    {
+        $this->assertAdmin($actor);
+
+        $date = now(config('rental.timezone'))->toDateString();
+
+        return [
+            'date' => $date,
+            'count' => $this->rentals->countRequestedOn($date),
+        ];
+    }
+
     private function requireRenter(User $actor): Cliente
     {
         $this->assertRenter($actor);
