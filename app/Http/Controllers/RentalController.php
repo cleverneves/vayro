@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\BusinessRuleException;
 use App\Http\Requests\ListAvailableVehiclesRequest;
 use App\Http\Requests\StoreRentalRequest;
+use App\Http\Requests\UpdateRentalRequest;
 use App\Http\Resources\AvailableVehicleResource;
 use App\Http\Resources\RentalResource;
 use App\Services\RentalService;
@@ -77,6 +78,21 @@ class RentalController extends Controller
         return new RentalResource($rental);
     }
 
+    public function update(UpdateRentalRequest $request, int $locacao)
+    {
+        try {
+            $rental = $this->rentals->updateByAdmin(
+                auth('api')->user(),
+                $locacao,
+                $request->payload(),
+            );
+        } catch (BusinessRuleException $e) {
+            return $this->fromBusinessRule($e);
+        }
+
+        return new RentalResource($rental);
+    }
+
     private function fromBusinessRule(BusinessRuleException $e): JsonResponse
     {
         if ($e->domainCode() === BusinessRuleException::INVALID_PERIOD) {
@@ -94,6 +110,12 @@ class RentalController extends Controller
         return match ($e->domainCode()) {
             BusinessRuleException::VEHICLE_UNAVAILABLE => response()->json([
                 'message' => 'O automóvel não está disponível nesse período.',
+            ], 409),
+            BusinessRuleException::INVALID_TRANSITION => response()->json([
+                'message' => 'A mudança de status não é permitida.',
+            ], 409),
+            BusinessRuleException::RENTAL_CLOSED => response()->json([
+                'message' => 'A locação encerrada não pode ser alterada.',
             ], 409),
             BusinessRuleException::NOT_FOUND => response()->json([
                 'message' => 'Locação não encontrada.',

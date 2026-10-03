@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { getPapel, getToken } from './auth/session'
+import AdminRentalDetailPage from './pages/AdminRentalDetailPage'
 import AdminRenterDetailPage from './pages/AdminRenterDetailPage'
 import AdminRentalsPage from './pages/AdminRentalsPage'
 import AdminRentersPage from './pages/AdminRentersPage'
@@ -23,6 +24,7 @@ type Screen =
   | 'admin-renters'
   | 'admin-renter-detail'
   | 'admin-rentals'
+  | 'admin-rental-detail'
 
 function homeScreen(): Screen {
   if (!getToken()) {
@@ -102,7 +104,24 @@ export default function App() {
   }
 
   if (screen === 'admin-rentals') {
-    return <AdminRentalsPage onBack={() => setScreen('admin-renters')} />
+    return (
+      <AdminRentalsPage
+        onOpenRental={(id) => {
+          setRentalId(id)
+          setScreen('admin-rental-detail')
+        }}
+        onBack={() => setScreen('admin-renters')}
+      />
+    )
+  }
+
+  if (screen === 'admin-rental-detail' && rentalId !== null) {
+    return (
+      <AdminRentalDetailPage
+        rentalId={rentalId}
+        onBack={() => setScreen('admin-rentals')}
+      />
+    )
   }
 
   if (screen === 'profile') {

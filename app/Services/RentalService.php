@@ -112,6 +112,52 @@ class RentalService
         return $rental;
     }
 
+    public function updateByAdmin(User $actor, int $rentalId, array $data): Rental
+    {
+        $this->assertAdmin($actor);
+
+        return DB::transaction(function () use ($rentalId, $data) {
+            $rental = $this->rentals->lockById($rentalId);
+
+            if ($rental === null) {
+                throw new BusinessRuleException(
+                    BusinessRuleException::NOT_FOUND,
+                    'Locação não encontrada.',
+                );
+            }
+
+            if ($rental->isClosed()) {
+                throw new BusinessRuleException(
+                    BusinessRuleException::RENTAL_CLOSED,
+                    'A locação encerrada não pode ser alterada.',
+                );
+            }
+
+            $attributes = [];
+
+            if (array_key_exists('status', $data)) {
+                if (!$rental->canTransitionTo($data['status'])) {
+                    throw new BusinessRuleException(
+                        BusinessRuleException::INVALID_TRANSITION,
+                        'A mudança de status não é permitida.',
+                    );
+                }
+
+                $attributes['status'] = $data['status'];
+            }
+
+            if (array_key_exists('admin_note', $data)) {
+                $attributes['admin_note'] = $data['admin_note'] === '' ? null : $data['admin_note'];
+            }
+
+            if ($attributes === []) {
+                return $rental;
+            }
+
+            return $this->rentals->update($rental, $attributes);
+        });
+    }
+
     private function requireRenter(User $actor): Cliente
     {
         $this->assertRenter($actor);

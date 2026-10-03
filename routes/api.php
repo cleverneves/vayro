@@ -40,6 +40,7 @@ Route::prefix('v2')->group(function () {
     Route::middleware(['jwt.auth', 'role:admin'])->group(function () {
         Route::get('locatarios', [RenterController::class, 'index']);
         Route::get('locatarios/{locatario}', [RenterController::class, 'show']);
+        Route::patch('locacoes/{locacao}', [RentalController::class, 'update']);
     });
 
     Route::middleware('jwt.auth')->group(function () {

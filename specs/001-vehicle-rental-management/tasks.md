@@ -158,14 +158,14 @@
 
 ### Tests for User Story 5 (REQUIRED for business rules) ⚠️
 
-- [ ] T049 [US5] Unit tests for allowed transitions, cancelled releasing the vehicle, note-only update, empty note, illegal transition rolling back note, closed rental, and renter cannot update in `tests/Unit/Services/RentalServiceTest.php`
+- [X] T049 [US5] Unit tests for allowed transitions, cancelled releasing the vehicle, note-only update, empty note, illegal transition rolling back note, closed rental, and renter cannot update in `tests/Unit/Services/RentalServiceTest.php`
 
 ### Implementation for User Story 5
 
-- [ ] T050 [US5] Implement atomic `updateByAdmin` (status sequence + `admin_note` rules) in `app/Services/RentalService.php` and `app/Repositories/RentalRepository.php`
-- [ ] T051 [P] [US5] Create `UpdateRentalRequest` (`status` and/or `observacao`, at least one required, max 500) in `app/Http/Requests/UpdateRentalRequest.php`
-- [ ] T052 [US5] Expose `PATCH /api/v2/locacoes/{locacao}` (admin only, `403` for renter) in `app/Http/Controllers/RentalController.php` and `routes/api.php`
-- [ ] T053 [US5] Add status/observation form on admin rental detail in `frontend/src/pages/AdminRentalDetailPage.tsx`
+- [X] T050 [US5] Implement atomic `updateByAdmin` (status sequence + `admin_note` rules) in `app/Services/RentalService.php` and `app/Repositories/RentalRepository.php`
+- [X] T051 [P] [US5] Create `UpdateRentalRequest` (`status` and/or `observacao`, at least one required, max 500) in `app/Http/Requests/UpdateRentalRequest.php`
+- [X] T052 [US5] Expose `PATCH /api/v2/locacoes/{locacao}` (admin only, `403` for renter) in `app/Http/Controllers/RentalController.php` and `routes/api.php`
+- [X] T053 [US5] Add status/observation form on admin rental detail in `frontend/src/pages/AdminRentalDetailPage.tsx`
 
 **Checkpoint**: Sequência de status e observação funcionam; `completed`/`cancelled` são finais; dono vê o mesmo estado
 

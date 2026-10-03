@@ -468,6 +468,169 @@ class RentalServiceTest extends TestCase
         }
     }
 
+    public function test_admin_follows_allowed_transitions_and_owner_sees_the_same_state(): void
+    {
+        $admin = User::factory()->create();
+        $owner = $this->renterActor();
+        $rental = Rental::factory()->create([
+            'renter_id' => $this->renterId($owner),
+            'status' => Rental::STATUS_REQUESTED,
+            'admin_note' => null,
+        ]);
+
+        $confirmed = $this->service->updateByAdmin($admin, $rental->id, [
+            'status' => Rental::STATUS_CONFIRMED,
+            'admin_note' => 'Documentos conferidos',
+        ]);
+        $this->assertSame(Rental::STATUS_CONFIRMED, $confirmed->status);
+        $this->assertSame('Documentos conferidos', $confirmed->admin_note);
+
+        $inProgress = $this->service->updateByAdmin($admin, $rental->id, [
+            'status' => Rental::STATUS_IN_PROGRESS,
+        ]);
+        $this->assertSame(Rental::STATUS_IN_PROGRESS, $inProgress->status);
+        $this->assertSame('Documentos conferidos', $inProgress->admin_note);
+
+        $completed = $this->service->updateByAdmin($admin, $rental->id, [
+            'status' => Rental::STATUS_COMPLETED,
+        ]);
+        $this->assertSame(Rental::STATUS_COMPLETED, $completed->status);
+
+        $asOwner = $this->service->showForRenter($owner, $rental->id);
+        $this->assertSame(Rental::STATUS_COMPLETED, $asOwner->status);
+        $this->assertSame('Documentos conferidos', $asOwner->admin_note);
+    }
+
+    public function test_cancelled_releases_the_vehicle_for_a_new_rental(): void
+    {
+        $admin = User::factory()->create();
+        $owner = $this->renterActor();
+        $other = $this->renterActor();
+        $vehicle = Carro::factory()->create();
+        $today = $this->today();
+
+        $rental = $this->service->createForRenter($owner, [
+            'vehicle_id' => $vehicle->id,
+            'starts_on' => $today,
+            'day_count' => 2,
+            'reason' => Rental::REASON_TRIP,
+        ]);
+
+        $this->service->updateByAdmin($admin, $rental->id, [
+            'status' => Rental::STATUS_CANCELLED,
+        ]);
+
+        $replacement = $this->service->createForRenter($other, [
+            'vehicle_id' => $vehicle->id,
+            'starts_on' => $today,
+            'day_count' => 2,
+            'reason' => Rental::REASON_LEISURE,
+        ]);
+
+        $this->assertSame(Rental::STATUS_CANCELLED, $rental->fresh()->status);
+        $this->assertSame(Rental::STATUS_REQUESTED, $replacement->status);
+    }
+
+    public function test_admin_can_change_or_clear_note_without_changing_status(): void
+    {
+        $admin = User::factory()->create();
+        $rental = Rental::factory()->create([
+            'renter_id' => $this->renterId($this->renterActor()),
+            'status' => Rental::STATUS_CONFIRMED,
+            'admin_note' => 'Primeira nota',
+        ]);
+
+        $updated = $this->service->updateByAdmin($admin, $rental->id, [
+            'admin_note' => 'Nota atualizada',
+        ]);
+        $this->assertSame(Rental::STATUS_CONFIRMED, $updated->status);
+        $this->assertSame('Nota atualizada', $updated->admin_note);
+
+        $cleared = $this->service->updateByAdmin($admin, $rental->id, [
+            'admin_note' => '',
+        ]);
+        $this->assertSame(Rental::STATUS_CONFIRMED, $cleared->status);
+        $this->assertNull($cleared->admin_note);
+    }
+
+    public function test_illegal_transition_does_not_save_the_note(): void
+    {
+        $admin = User::factory()->create();
+        $rental = Rental::factory()->create([
+            'renter_id' => $this->renterId($this->renterActor()),
+            'status' => Rental::STATUS_REQUESTED,
+            'admin_note' => 'Original',
+        ]);
+
+        try {
+            $this->service->updateByAdmin($admin, $rental->id, [
+                'status' => Rental::STATUS_COMPLETED,
+                'admin_note' => 'Não deve gravar',
+            ]);
+            $this->fail('Expected illegal transition to be rejected.');
+        } catch (BusinessRuleException $e) {
+            $this->assertSame(BusinessRuleException::INVALID_TRANSITION, $e->domainCode());
+        }
+
+        $rental->refresh();
+        $this->assertSame(Rental::STATUS_REQUESTED, $rental->status);
+        $this->assertSame('Original', $rental->admin_note);
+    }
+
+    public function test_closed_rental_rejects_status_and_note_changes(): void
+    {
+        $admin = User::factory()->create();
+
+        foreach ([Rental::STATUS_COMPLETED, Rental::STATUS_CANCELLED] as $status) {
+            $rental = Rental::factory()->create([
+                'renter_id' => $this->renterId($this->renterActor()),
+                'status' => $status,
+                'admin_note' => 'Final',
+            ]);
+
+            try {
+                $this->service->updateByAdmin($admin, $rental->id, [
+                    'admin_note' => 'Tentativa',
+                ]);
+                $this->fail("Expected {$status} note update to be rejected.");
+            } catch (BusinessRuleException $e) {
+                $this->assertSame(BusinessRuleException::RENTAL_CLOSED, $e->domainCode());
+            }
+
+            $this->assertSame('Final', $rental->fresh()->admin_note);
+            $this->assertSame($status, $rental->fresh()->status);
+        }
+    }
+
+    public function test_renter_cannot_update_rental_and_missing_id_is_not_found(): void
+    {
+        $owner = $this->renterActor();
+        $rental = Rental::factory()->create([
+            'renter_id' => $this->renterId($owner),
+            'status' => Rental::STATUS_REQUESTED,
+        ]);
+
+        try {
+            $this->service->updateByAdmin($owner, $rental->id, [
+                'status' => Rental::STATUS_CANCELLED,
+            ]);
+            $this->fail('Expected renter update to be forbidden.');
+        } catch (BusinessRuleException $e) {
+            $this->assertSame(BusinessRuleException::FORBIDDEN, $e->domainCode());
+        }
+
+        try {
+            $this->service->updateByAdmin(User::factory()->create(), 999, [
+                'status' => Rental::STATUS_CONFIRMED,
+            ]);
+            $this->fail('Expected missing rental update to be not_found.');
+        } catch (BusinessRuleException $e) {
+            $this->assertSame(BusinessRuleException::NOT_FOUND, $e->domainCode());
+        }
+
+        $this->assertSame(Rental::STATUS_REQUESTED, $rental->fresh()->status);
+    }
+
     private function renterActor(): User
     {
         $user = User::factory()->renter()->create();

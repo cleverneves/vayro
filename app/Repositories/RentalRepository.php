@@ -62,4 +62,20 @@ class RentalRepository
             ->whereKey($rentalId)
             ->first();
     }
+
+    public function lockById(int $rentalId): ?Rental
+    {
+        return Rental::query()
+            ->with(['renter', 'vehicle.modelo.marca'])
+            ->whereKey($rentalId)
+            ->lockForUpdate()
+            ->first();
+    }
+
+    public function update(Rental $rental, array $attributes): Rental
+    {
+        $rental->update($attributes);
+
+        return $rental->fresh(['renter', 'vehicle.modelo.marca']);
+    }
 }

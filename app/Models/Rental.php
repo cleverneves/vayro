@@ -33,6 +33,17 @@ class Rental extends Model
         self::STATUS_IN_PROGRESS,
     ];
 
+    public const FINAL_STATUSES = [
+        self::STATUS_COMPLETED,
+        self::STATUS_CANCELLED,
+    ];
+
+    public const TRANSITIONS = [
+        self::STATUS_REQUESTED => [self::STATUS_CONFIRMED, self::STATUS_CANCELLED],
+        self::STATUS_CONFIRMED => [self::STATUS_IN_PROGRESS, self::STATUS_CANCELLED],
+        self::STATUS_IN_PROGRESS => [self::STATUS_COMPLETED],
+    ];
+
     protected $fillable = [
         'renter_id',
         'vehicle_id',
@@ -74,6 +85,16 @@ class Rental extends Model
     public function isReserving(): bool
     {
         return in_array($this->status, self::RESERVING_STATUSES, true);
+    }
+
+    public function isClosed(): bool
+    {
+        return in_array($this->status, self::FINAL_STATUSES, true);
+    }
+
+    public function canTransitionTo(string $status): bool
+    {
+        return in_array($status, self::TRANSITIONS[$this->status] ?? [], true);
     }
 
     public function overlapsPeriod(CarbonInterface $startsOn, int $dayCount): bool

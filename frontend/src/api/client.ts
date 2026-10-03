@@ -25,6 +25,13 @@ export type AvailableVehicle = {
 
 export type Motivo = 'viagem' | 'passeio' | 'dia-a-dia'
 
+export type RentalStatus =
+  | 'solicitada'
+  | 'confirmada'
+  | 'em_andamento'
+  | 'concluida'
+  | 'cancelada'
+
 export type Rental = {
   id: number
   locatario: RenterProfile
@@ -37,7 +44,7 @@ export type Rental = {
   }
   motivo: Motivo
   comentario: string | null
-  status: string
+  status: RentalStatus
   observacao: string | null
   data_solicitacao: string
 }
@@ -184,6 +191,18 @@ export async function listRenters(): Promise<RenterProfile[]> {
 
 export async function getRenter(id: number): Promise<RenterProfile> {
   const response = await request<{ data: RenterProfile }>(`/api/v2/locatarios/${id}`)
+
+  return response.data
+}
+
+export async function updateRental(
+  id: number,
+  body: { status?: RentalStatus; observacao?: string | null },
+): Promise<Rental> {
+  const response = await request<{ data: Rental }>(`/api/v2/locacoes/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  })
 
   return response.data
 }
