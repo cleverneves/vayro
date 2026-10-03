@@ -10,18 +10,25 @@ API REST para gerenciamento de locação de veículos, construída com **Laravel
 - **Redis**
 - **Nginx**
 - **Docker / Docker Compose**
+- **Frontend**: React, TypeScript e Material UI (quando a feature incluir interface)
 
 ## Arquitetura
 
-A API segue o fluxo convencional do Laravel, sem camadas extras (Repository, Service genérico, etc.):
+A constituição (`.specify/memory/constitution.md`) define as regras do projeto.
+O fluxo separa HTTP, regra de negócio e persistência:
 
 ```
-Route → Controller → Form Request → Model (Eloquent) → API Resource → Response
+Route → Controller → Form Request → Service → Repository → Model (Eloquent)
+                                 ↘ API Resource → Response
 ```
 
-- **Form Requests** (`app/Http/Requests`) concentram toda a validação de entrada.
-- **API Resources** (`app/Http/Resources`) controlam o formato das respostas e nunca expõem Models diretamente.
-- **Route Model Binding** é usado para buscar registros por ID, com resposta 404 padronizada quando o recurso não existe.
+- **Controllers** (`app/Http/Controllers`) orquestram o HTTP. Não contêm regra de negócio nem consulta direta.
+- **Form Requests** (`app/Http/Requests`) validam a entrada.
+- **Services** (`app/Services`) concentram as regras de negócio.
+- **Repositories** (`app/Repositories`) concentram o acesso a dados.
+- **API Resources** (`app/Http/Resources`) definem o JSON público e não expõem Models diretamente.
+
+Controllers que ainda persistem via Eloquent são legado. Ao alterar esse fluxo, a mudança passa a seguir as camadas acima.
 
 ## Serviços Docker
 

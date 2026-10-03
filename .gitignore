@@ -15,3 +15,14 @@ yarn-error.log
 /.idea
 /.vscode
 /.docker
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+*.log
+*.cache
+/frontend/node_modules
+/frontend/dist
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.*.local
