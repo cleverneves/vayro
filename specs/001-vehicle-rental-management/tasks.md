@@ -195,11 +195,11 @@
 
 **Purpose**: Navegação por papel, regressão de `/api/v1` e validação do quickstart
 
-- [ ] T058 [P] Add MUI theme and role-based navigation (hide admin routes from renter) in `frontend/src/theme/index.ts` and `frontend/src/App.tsx`
+- [X] T058 [P] Add MUI theme and role-based navigation (hide admin routes from renter) in `frontend/src/theme/index.ts` and `frontend/src/App.tsx`
 - [ ] T059 Confirm existing `/api/v1` Feature suite stays green in `tests/Feature/`
 - [ ] T060 Run `docker-compose exec app php artisan test --testsuite=Unit` per `specs/001-vehicle-rental-management/quickstart.md`
-- [ ] T061 [P] Document frontend port 5173, Compose service and unit-test command in `README.md`
-- [ ] T062 Walk through manual API checks in `specs/001-vehicle-rental-management/quickstart.md` against `specs/001-vehicle-rental-management/contracts/`
+- [X] T061 [P] Document frontend port 5173, Compose service and unit-test command in `README.md`
+- [X] T062 Walk through manual API checks in `specs/001-vehicle-rental-management/quickstart.md` against `specs/001-vehicle-rental-management/contracts/`
 
 ---
 

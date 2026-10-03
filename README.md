@@ -10,7 +10,7 @@ API REST para gerenciamento de locação de veículos, construída com **Laravel
 - **Redis**
 - **Nginx**
 - **Docker / Docker Compose**
-- **Frontend**: React, TypeScript e Material UI (quando a feature incluir interface)
+- **Frontend**: Vite 7, React 19, TypeScript e Material UI 7 (`frontend/`, porta `5173`)
 
 ## Arquitetura
 
@@ -39,6 +39,7 @@ Controllers que ainda persistem via Eloquent são legado. Ao alterar esse fluxo,
 | `vayro-pgsql` | Banco de dados PostgreSQL 16 | `5432` |
 | `vayro-redis` | Cache e filas Redis | — |
 | `vayro-queue` | Worker de filas Laravel | — |
+| `vayro-frontend` | SPA Vite (React + Material UI) | `5173` |
 
 ## Instalação
 
@@ -82,6 +83,12 @@ docker-compose exec app php artisan storage:link
 ```
 
 A API estará disponível em **[http://localhost:8989](http://localhost:8989)**.
+
+A interface de desenvolvimento sobe no serviço `frontend` e fica em **[http://localhost:5173](http://localhost:5173)**. Ela chama a API com `Authorization: Bearer` e `VITE_API_BASE_URL=http://localhost:8989`.
+
+```bash
+docker-compose up -d frontend
+```
 
 ---
 
@@ -199,6 +206,14 @@ Para executar a suíte:
 ```bash
 docker-compose exec app php artisan test
 ```
+
+As regras de negócio de `/api/v2` (services `RenterAccountService` e `RentalService`) são a suíte Unit, contra o PostgreSQL `vayro_testing`:
+
+```bash
+docker-compose exec app php artisan test --testsuite=Unit
+```
+
+A suíte Feature de `/api/v1` permanece e deve continuar verde. O contrato publicado de marcas, modelos, carros, clientes e locações de v1 não muda.
 
 ---
 
