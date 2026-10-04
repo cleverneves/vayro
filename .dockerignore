@@ -4,8 +4,9 @@
 .vscode
 .docker
 node_modules
-frontend/node_modules
-frontend/dist
+apps/web/node_modules
+apps/web/dist
+apps/api/vendor
 vendor
 .env
 .env.*
@@ -19,3 +20,7 @@ storage/logs/*
 storage/framework/cache/*
 storage/framework/sessions/*
 storage/framework/views/*
+apps/api/storage/logs/*
+apps/api/storage/framework/cache/*
+apps/api/storage/framework/sessions/*
+apps/api/storage/framework/views/*

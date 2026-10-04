@@ -2,13 +2,13 @@ services:
     app:
         container_name: vayro-app
         build:
-            context: .
+            context: ./apps/api
             dockerfile: Dockerfile
         image: vayro/laravel-app
         restart: unless-stopped
-        working_dir: /var/www/
+        working_dir: /var/www
         volumes:
-            - ./:/var/www
+            - ./apps/api:/var/www
         depends_on:
             pgsql:
                 condition: service_healthy
@@ -24,8 +24,8 @@ services:
         ports:
             - "8989:80"
         volumes:
-            - ./:/var/www
-            - ./docker/nginx/:/etc/nginx/conf.d/
+            - ./apps/api:/var/www
+            - ./infra/docker/nginx/:/etc/nginx/conf.d/
         depends_on:
             - app
         networks:
@@ -36,16 +36,14 @@ services:
         container_name: vayro-pgsql
         image: postgres:16-alpine
         restart: unless-stopped
-        environment:
-            POSTGRES_DB: ${DB_DATABASE:-vayro}
-            POSTGRES_USER: ${DB_USERNAME:-vayro}
-            POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+        env_file:
+            - ./infra/postgres/.env
         volumes:
             - ./.docker/pgsql/dbdata:/var/lib/postgresql/data
         ports:
             - "5432:5432"
         healthcheck:
-            test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME:-vayro} -d ${DB_DATABASE:-vayro}" ]
+            test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
             interval: 10s
             timeout: 5s
             retries: 5
@@ -58,8 +56,9 @@ services:
         image: vayro/laravel-app
         restart: unless-stopped
         command: "php artisan queue:work"
+        working_dir: /var/www
         volumes:
-            - ./:/var/www
+            - ./apps/api:/var/www
         depends_on:
             - redis
             - app
@@ -82,7 +81,7 @@ services:
         ports:
             - "5173:5173"
         volumes:
-            - ./frontend:/app
+            - ./apps/web:/app
             - frontend_node_modules:/app/node_modules
         environment:
             - VITE_API_BASE_URL=http://localhost:8989

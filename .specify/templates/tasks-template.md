@@ -22,10 +22,10 @@ Other tests are optional. Do not add tests for trivial methods.
 
 ## Path Conventions
 
-- **Vayro API (default)**: `app/Http/Controllers/`, `app/Http/Requests/`,
-  `app/Http/Resources/`, `app/Services/`, `app/Repositories/`, `app/Models/`,
-  `routes/`, `tests/Feature/`
-- **Vayro UI** (when the feature includes a screen): `frontend/src/`
+- **Vayro API (default)**: `apps/api/app/Http/Controllers/`, `apps/api/app/Http/Requests/`,
+  `apps/api/app/Http/Resources/`, `apps/api/app/Services/`, `apps/api/app/Repositories/`,
+  `apps/api/app/Models/`, `apps/api/routes/`, `apps/api/tests/Feature/`
+- **Vayro UI** (when the feature includes a screen): `apps/web/src/`
 - **Single project**: `src/`, `tests/` at repository root
 - **Mobile**: `api/src/`, `ios/src/` or `android/src/`
 - Adjust paths to match plan.md. Sample tasks below illustrate the Vayro layout.
@@ -88,15 +88,15 @@ Examples of foundational tasks (adjust based on your project):
 
 > **NOTE: Cover each business rule. Feature test when the rule is visible over HTTP.**
 
-- [ ] T010 [P] [US1] Feature test for [business rule] in tests/Feature/[Name]Test.php
+- [ ] T010 [P] [US1] Feature test for [business rule] in apps/api/tests/Feature/[Name]Test.php
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Create [Entity1] model in app/Models/[Entity1].php
-- [ ] T013 [P] [US1] Create [Entity2] model in app/Models/[Entity2].php
-- [ ] T014 [US1] Implement [Repository] in app/Repositories/[Name]Repository.php (depends on T012, T013)
-- [ ] T015 [US1] Implement [Service] in app/Services/[Name]Service.php (business rules; depends on T014)
-- [ ] T016 [US1] Implement [endpoint] in app/Http/Controllers/[Name]Controller.php and routes/api.php
+- [ ] T012 [P] [US1] Create [Entity1] model in apps/api/app/Models/[Entity1].php
+- [ ] T013 [P] [US1] Create [Entity2] model in apps/api/app/Models/[Entity2].php
+- [ ] T014 [US1] Implement [Repository] in apps/api/app/Repositories/[Name]Repository.php (depends on T012, T013)
+- [ ] T015 [US1] Implement [Service] in apps/api/app/Services/[Name]Service.php (business rules; depends on T014)
+- [ ] T016 [US1] Implement [endpoint] in apps/api/app/Http/Controllers/[Name]Controller.php and apps/api/routes/api.php
 - [ ] T017 [US1] Add Form Request validation and API Resource response
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
@@ -111,14 +111,14 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 2 (REQUIRED for business rules) ⚠️
 
-- [ ] T018 [P] [US2] Feature test for [business rule] in tests/Feature/[Name]Test.php
+- [ ] T018 [P] [US2] Feature test for [business rule] in apps/api/tests/Feature/[Name]Test.php
 
 ### Implementation for User Story 2
 
-- [ ] T020 [P] [US2] Create [Entity] model in app/Models/[Entity].php
-- [ ] T021 [US2] Implement [Repository] in app/Repositories/[Name]Repository.php
-- [ ] T022 [US2] Implement [Service] in app/Services/[Name]Service.php
-- [ ] T023 [US2] Implement [endpoint] in app/Http/Controllers/[Name]Controller.php and routes/api.php
+- [ ] T020 [P] [US2] Create [Entity] model in apps/api/app/Models/[Entity].php
+- [ ] T021 [US2] Implement [Repository] in apps/api/app/Repositories/[Name]Repository.php
+- [ ] T022 [US2] Implement [Service] in apps/api/app/Services/[Name]Service.php
+- [ ] T023 [US2] Implement [endpoint] in apps/api/app/Http/Controllers/[Name]Controller.php and apps/api/routes/api.php
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -132,14 +132,14 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 3 (REQUIRED for business rules) ⚠️
 
-- [ ] T024 [P] [US3] Feature test for [business rule] in tests/Feature/[Name]Test.php
+- [ ] T024 [P] [US3] Feature test for [business rule] in apps/api/tests/Feature/[Name]Test.php
 
 ### Implementation for User Story 3
 
-- [ ] T026 [P] [US3] Create [Entity] model in app/Models/[Entity].php
-- [ ] T027 [US3] Implement [Repository] in app/Repositories/[Name]Repository.php
-- [ ] T028 [US3] Implement [Service] in app/Services/[Name]Service.php
-- [ ] T029 [US3] Implement [endpoint] in app/Http/Controllers/[Name]Controller.php and routes/api.php
+- [ ] T026 [P] [US3] Create [Entity] model in apps/api/app/Models/[Entity].php
+- [ ] T027 [US3] Implement [Repository] in apps/api/app/Repositories/[Name]Repository.php
+- [ ] T028 [US3] Implement [Service] in apps/api/app/Services/[Name]Service.php
+- [ ] T029 [US3] Implement [endpoint] in apps/api/app/Http/Controllers/[Name]Controller.php and apps/api/routes/api.php
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -202,11 +202,11 @@ Examples of foundational tasks (adjust based on your project):
 
 ```bash
 # Launch business-rule tests for User Story 1 together:
-Task: "Feature test for [business rule] in tests/Feature/[Name]Test.php"
+Task: "Feature test for [business rule] in apps/api/tests/Feature/[Name]Test.php"
 
 # Launch all models for User Story 1 together:
-Task: "Create [Entity1] model in app/Models/[Entity1].php"
-Task: "Create [Entity2] model in app/Models/[Entity2].php"
+Task: "Create [Entity1] model in apps/api/app/Models/[Entity1].php"
+Task: "Create [Entity2] model in apps/api/app/Models/[Entity2].php"
 ```
 
 ---

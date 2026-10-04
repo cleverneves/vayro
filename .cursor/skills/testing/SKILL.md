@@ -8,12 +8,25 @@ description: Criar e executar testes para a API Laravel do Vayro, especialmente 
 ## Workflow
 
 1. Identificar comportamento alterado.
-2. Encontrar testes existentes relacionados.
+2. Encontrar testes existentes relacionados em `apps/api/tests/`.
 3. Criar ou atualizar testes.
 4. Executar o teste específico.
 5. Corrigir falhas.
 6. Executar testes relacionados.
 7. Executar suíte completa quando apropriado.
+
+A suíte roda no container `app`, cujo `working_dir` é `/var/www` montado em
+`apps/api`:
+
+```bash
+docker-compose exec app php artisan test
+```
+
+Um arquivo específico:
+
+```bash
+docker-compose exec app php artisan test --filter NomeDoTeste
+```
 
 ## Feature Tests
 

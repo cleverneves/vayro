@@ -93,18 +93,19 @@ tests/
 └── unit/
 
 # [REMOVE IF UNUSED] Option 2: Vayro web application (DEFAULT for this repo)
-app/
-├── Http/
-│   ├── Controllers/
-│   ├── Requests/
-│   └── Resources/
-├── Services/
-├── Repositories/
-└── Models/
-routes/
-tests/
-└── Feature/
-frontend/                 # React + TypeScript + Material UI, when UI is in scope
+apps/api/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   ├── Requests/
+│   │   └── Resources/
+│   ├── Services/
+│   ├── Repositories/
+│   └── Models/
+├── routes/
+└── tests/
+    └── Feature/
+apps/web/                 # React + TypeScript + Material UI, when UI is in scope
 └── src/
     ├── components/
     └── pages/

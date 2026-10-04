@@ -1,6 +1,19 @@
-# Vayro — API de Locação de Veículos
+# Vayro — Locação de Veículos
 
-API REST para gerenciamento de locação de veículos, construída com **Laravel 13** e autenticada via **JWT**.
+Produto de locação de veículos em monorepo: interface em **React**, serviço em **Laravel 13** com **JWT**, dados em **PostgreSQL**.
+
+## Layout
+
+| Área | Responsabilidade |
+|---|---|
+| `apps/web` | Interface (React, TypeScript, Material UI) |
+| `apps/api` | Serviço de negócio (Laravel, regras, persistência, testes) |
+| `infra` | Ambiente compartilhado (Nginx, PostgreSQL) |
+| `docs` | Estrutura, ambiente e decisões |
+
+O ponto único de subida é o `docker-compose.yml` da raiz.
+
+Guias: [estrutura](docs/structure.md), [ambiente](docs/environment.md) e [fronteiras do monorepo](docs/decisions/001-monorepo-boundaries.md).
 
 ## Stack
 
@@ -10,23 +23,23 @@ API REST para gerenciamento de locação de veículos, construída com **Laravel
 - **Redis**
 - **Nginx**
 - **Docker / Docker Compose**
-- **Frontend**: Vite 7, React 19, TypeScript e Material UI 7 (`frontend/`, porta `5173`)
+- **Interface**: Vite 7, React 19, TypeScript e Material UI 7 (`apps/web`, porta `5173`)
 
 ## Arquitetura
 
 A constituição (`.specify/memory/constitution.md`) define as regras do projeto.
-O fluxo separa HTTP, regra de negócio e persistência:
+O fluxo do serviço em `apps/api` separa HTTP, regra de negócio e persistência:
 
 ```
 Route → Controller → Form Request → Service → Repository → Model (Eloquent)
                                  ↘ API Resource → Response
 ```
 
-- **Controllers** (`app/Http/Controllers`) orquestram o HTTP. Não contêm regra de negócio nem consulta direta.
-- **Form Requests** (`app/Http/Requests`) validam a entrada.
-- **Services** (`app/Services`) concentram as regras de negócio.
-- **Repositories** (`app/Repositories`) concentram o acesso a dados.
-- **API Resources** (`app/Http/Resources`) definem o JSON público e não expõem Models diretamente.
+- **Controllers** (`apps/api/app/Http/Controllers`) orquestram o HTTP. Não contêm regra de negócio nem consulta direta.
+- **Form Requests** (`apps/api/app/Http/Requests`) validam a entrada.
+- **Services** (`apps/api/app/Services`) concentram as regras de negócio.
+- **Repositories** (`apps/api/app/Repositories`) concentram o acesso a dados.
+- **API Resources** (`apps/api/app/Http/Resources`) definem o JSON público e não expõem Models diretamente.
 
 Controllers que ainda persistem via Eloquent são legado. Ao alterar esse fluxo, a mudança passa a seguir as camadas acima.
 
@@ -43,11 +56,15 @@ Controllers que ainda persistem via Eloquent são legado. Ao alterar esse fluxo,
 
 ## Instalação
 
-### 1. Clone o repositório e copie o `.env`
+### 1. Clone o repositório e copie os arquivos de ambiente
 
 ```bash
-cp .env.example .env
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
+cp infra/postgres/.env.example infra/postgres/.env
 ```
+
+O detalhe completo está em [docs/environment.md](docs/environment.md).
 
 ### 2. Suba os containers
 
@@ -195,7 +212,7 @@ Listagens são paginadas e incluem `links` e `meta`. Erros de validação retorn
 
 ## Testes
 
-A suíte usa um banco PostgreSQL isolado (`vayro_testing`), configurado em `phpunit.xml`. Antes de rodar os testes pela primeira vez, crie o banco:
+A suíte usa um banco PostgreSQL isolado (`vayro_testing`), configurado em `apps/api/phpunit.xml`. O comando roda no container `app`, cujo `working_dir` aponta para `apps/api`. Antes de rodar os testes pela primeira vez, crie o banco:
 
 ```bash
 docker-compose exec pgsql psql -U vayro -d vayro -c "CREATE DATABASE vayro_testing;"
